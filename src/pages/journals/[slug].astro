@@ -1,26 +1,25 @@
 ---
-// src/pages/journals/[slug].astro
-// Builds one page per journal in src/content/journals/*.md
-// e.g. yorkshire-dales.md  →  /journals/yorkshire-dales
+
+import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
-  const files = import.meta.glob("../../content/journals/*.md", { eager: true });
-  return Object.entries(files).map(([path, file]: [string, any]) => ({
-    params: { slug: path.split("/").pop()!.replace(".md", "") },
-    props: { file },
+  const journals = await getCollection('journals');
+  return journals.map((entry) => ({
+    params: { slug: entry.id },   // "yorkshire-dales"
+    props: { entry },
   }));
 }
 
-const { file } = Astro.props as any;
-const { Content, frontmatter } = file;
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const frontmatter = entry.data;   // keeps the rest of the template working unchanged
 
 const siteTitle = "Little Miles, Big Smiles";
-const instagramUrl = "https://www.instagram.com/"; // TODO: add your handle
+const instagramUrl = "https://www.instagram.com/";
 
-const date = frontmatter.date ? new Date(frontmatter.date) : null;
-const formattedDate = date
-  ? date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
-  : "";
+const date = frontmatter.date;    // already a Date thanks to z.coerce.date()
+const formattedDate = date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
 ---
 
 <!doctype html>

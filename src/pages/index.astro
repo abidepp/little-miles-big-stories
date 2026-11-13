@@ -1,4 +1,6 @@
 ---
+import { getCollection } from 'astro:content';
+
 // src/pages/index.astro
 // Homepage for Little Miles, Big Smiles.
 // Journals are read from src/content/journals/*.md — newest first.
@@ -9,18 +11,16 @@ const tagline = "Family adventures, one small step at a time.";
 const instagramUrl = "https://www.instagram.com/"; // TODO: add your handle
 const linktreeUrl = "https://linktr.ee/";          // TODO: add your Linktree
 
-const journalFiles = import.meta.glob("../content/journals/*.md", { eager: true });
-
-const journals = Object.entries(journalFiles)
-  .map(([path, file]: [string, any]) => ({
-    slug: path.split("/").pop()?.replace(".md", ""),
-    title: file.frontmatter?.title ?? "Untitled journal",
-    date: file.frontmatter?.date ? new Date(file.frontmatter.date) : null,
-    location: file.frontmatter?.location ?? "",
-    excerpt: file.frontmatter?.excerpt ?? "",
-    cover: file.frontmatter?.cover ?? "",
+const journals = (await getCollection('journals'))
+  .map((entry) => ({
+    slug: entry.id,
+    title: entry.data.title,
+    date: entry.data.date,
+    location: entry.data.location ?? "",
+    excerpt: entry.data.excerpt ?? "",
+    cover: entry.data.cover ?? "",
   }))
-  .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+  .sort((a, b) => b.date.getTime() - a.date.getTime());
 
 const featured = journals[0];
 const recent = journals.slice(1, 7);
