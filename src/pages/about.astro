@@ -1,63 +1,264 @@
 ---
-import AboutHeroImage from '../assets/blog-placeholder-about.jpg';
-import Layout from '../layouts/BlogPost.astro';
+// src/pages/about.astro
+// "About us" page for Little Miles, Big Smiles.
+// Edit the text in [square brackets] so it's in your own words.
+
+const siteTitle = "Little Miles, Big Smiles";
+const instagramUrl = "https://www.instagram.com/"; // TODO: add your handle
+const linktreeUrl = "https://linktr.ee/";          // TODO: add your Linktree
+
+// Put a family photo in public/images/ and set the path here, e.g. "/images/family.jpg"
+const familyPhoto = "";
+
+const whatYoullFind = [
+  { icon: "📖", title: "Honest journals", text: "A new trip story every month: what we did, what worked, and what we'd skip next time." },
+  { icon: "🧸", title: "Little-one friendly tips", text: "Buggy-friendly paths, nap-time planning, snack stops and places that welcome small children." },
+  { icon: "📍", title: "Places worth the miles", text: "Our favourite parks, beaches, castles and cafés, so you can plan your own family days out." },
+];
+
+const funFacts = [
+  { label: "Home base", value: "[Your town], UK" },
+  { label: "Originally from", value: "India" },
+  { label: "Travel crew", value: "[2 grown-ups + 1 little explorer]" },
+  { label: "Can't travel without", value: "[Snacks. Always snacks.]" },
+];
 ---
 
-<Layout
-	title="About Me"
-	description="Lorem ipsum dolor sit amet"
-	pubDate={new Date('August 08 2021')}
-	heroImage={AboutHeroImage}
->
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-		labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo
-		viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam
-		adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus
-		et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus
-		vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque
-		sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
-	</p>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About us | {siteTitle}</title>
+    <meta name="description" content="Meet the family behind Little Miles, Big Smiles." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-	<p>
-		Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non
-		tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non
-		blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna
-		porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis
-		massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc.
-		Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis
-		bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra
-		massa massa ultricies mi.
-	</p>
+  <body>
+    <header class="site-header">
+      <a href="/" class="logo">Little Miles<span>,</span> Big Smiles</a>
+      <nav>
+        <a href="/journals">Journals</a>
+        <a href="/about" class="active">About us</a>
+        <a href={instagramUrl} target="_blank" rel="noopener">Instagram</a>
+      </nav>
+    </header>
 
-	<p>
-		Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl
-		suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet
-		nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae
-		turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem
-		dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat
-		semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus
-		vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum
-		facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam
-		vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla
-		urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
-	</p>
+    <main>
+      <!-- Intro with photo -->
+      <section class="intro">
+        <div class="intro-text">
+          <p class="eyebrow">About us</p>
+          <h1>Hello, we're the family behind the miles 👋</h1>
+          <p class="lede">
+            [We're a family of three who moved from India to the UK and decided to explore
+            our new home one little trip at a time.]
+          </p>
+        </div>
+        <div class="intro-photo">
+          {familyPhoto
+            ? <img src={familyPhoto} alt="Our family on one of our trips" />
+            : <div class="img-placeholder">👨‍👩‍👧</div>}
+        </div>
+      </section>
 
-	<p>
-		Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper
-		viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc
-		scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur
-		gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus
-		pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim
-		blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id
-		cursus metus aliquam eleifend mi.
-	</p>
+      <!-- Our story -->
+      <section class="story">
+        <h2>Our story</h2>
+        <p>
+          [When we moved to the UK, everything was new: the weather, the trains, the endless
+          choice of places to visit. With a little one in tow, every outing felt like a small
+          adventure, and every adventure came with a story worth remembering.]
+        </p>
+        <p>
+          [We started this journal to keep those memories in one place, and to share what
+          we've learned along the way. Travelling with a young child isn't always smooth, but
+          the little moments (the first glimpse of the sea, a picnic in the rain, a new
+          favourite playground) make every mile worth it.]
+        </p>
+        <p>
+          [Whether you're new to the UK, planning your first family trip, or just looking for
+          ideas for the weekend, we hope our stories help you find your own big smiles.]
+        </p>
+      </section>
 
-	<p>
-		Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta
-		nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam
-		tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci
-		ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar
-		proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
-	</p>
-</Layout>
+      <!-- What you'll find -->
+      <section class="section">
+        <h2 class="section-title">What you'll find here</h2>
+        <div class="features">
+          {whatYoullFind.map((item) => (
+            <div class="feature">
+              <p class="feature-icon">{item.icon}</p>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Fun facts -->
+      <section class="facts">
+        <h2>A few things about us</h2>
+        <dl>
+          {funFacts.map((f) => (
+            <div class="fact">
+              <dt>{f.label}</dt>
+              <dd>{f.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <!-- CTA -->
+      <section class="section cta">
+        <h2>Come along for the journey</h2>
+        <p>Everyday snaps live on Instagram, and a new journal arrives here every month.</p>
+        <div class="actions">
+          <a href="/journals" class="btn btn-primary">Read our journals</a>
+          <a href={instagramUrl} class="btn btn-ghost" target="_blank" rel="noopener">Instagram</a>
+          <a href={linktreeUrl} class="btn btn-ghost" target="_blank" rel="noopener">All our links</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© {new Date().getFullYear()} {siteTitle}. Made with love and lots of snacks.</p>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fffaf3;
+    --surface: #ffffff;
+    --text: #2d2a26;
+    --muted: #6f675d;
+    --accent: #e0703a;
+    --accent-dark: #c25a28;
+    --soft: #fdeee2;
+    --teal: #2f7d78;
+    --radius: 18px;
+    --shadow: 0 6px 24px rgba(45, 42, 38, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Nunito", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, .logo { font-family: "Fraunces", Georgia, serif; line-height: 1.15; }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; width: 100%; height: 100%; object-fit: cover; }
+</style>
+
+<style>
+  /* Header */
+  .site-header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    max-width: 1100px; margin: 0 auto; padding: 20px 16px;
+  }
+  .logo { font-size: 1.35rem; font-weight: 700; }
+  .logo span { color: var(--accent); }
+  nav { display: flex; gap: 20px; font-weight: 600; }
+  nav a:hover, nav a.active { color: var(--accent); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+  /* Intro */
+  .intro {
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px;
+    align-items: center; padding: 48px 0;
+  }
+  .eyebrow {
+    color: var(--teal); font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; font-size: 0.85rem; margin-bottom: 10px;
+  }
+  .intro h1 { font-size: clamp(2rem, 5.5vw, 3.2rem); margin-bottom: 16px; }
+  .lede { font-size: 1.15rem; color: var(--muted); }
+  .intro-photo {
+    height: 360px; border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); transform: rotate(1.5deg);
+  }
+  .img-placeholder {
+    width: 100%; height: 100%;
+    display: grid; place-items: center; font-size: 5rem; background: var(--soft);
+  }
+
+  /* Story */
+  .story {
+    max-width: 720px; margin: 0 auto; padding: 40px 0;
+  }
+  .story h2 { font-size: 1.9rem; margin-bottom: 18px; }
+  .story p { font-size: 1.08rem; margin-bottom: 18px; color: var(--text); }
+
+  /* Features */
+  .section { padding: 48px 0; }
+  .section-title { font-size: 1.8rem; margin-bottom: 24px; text-align: center; }
+  .features {
+    display: grid; gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .feature {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 28px 24px; box-shadow: var(--shadow);
+  }
+  .feature-icon { font-size: 2.2rem; margin-bottom: 10px; }
+  .feature h3 { font-size: 1.25rem; margin-bottom: 8px; }
+  .feature p { color: var(--muted); }
+
+  /* Facts */
+  .facts {
+    background: var(--soft); border-radius: var(--radius);
+    padding: 48px 24px; margin: 24px 0; text-align: center;
+  }
+  .facts h2 { font-size: 1.8rem; margin-bottom: 28px; }
+  .facts dl {
+    display: grid; gap: 16px; max-width: 900px; margin: 0 auto;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+  .fact {
+    background: var(--surface); border-radius: 14px; padding: 18px 16px;
+  }
+  .fact dt {
+    font-size: 0.8rem; color: var(--teal); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;
+  }
+  .fact dd { font-weight: 700; }
+
+  /* CTA */
+  .cta { text-align: center; }
+  .cta h2 { font-size: 1.8rem; margin-bottom: 8px; }
+  .cta p { color: var(--muted); margin-bottom: 24px; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  .btn {
+    display: inline-block; padding: 12px 22px; border-radius: 999px;
+    font-weight: 700; transition: transform 0.15s, background 0.15s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-ghost { border: 2px solid var(--text); }
+  .btn-ghost:hover { background: var(--text); color: var(--bg); }
+
+  /* Footer */
+  .site-footer {
+    text-align: center; padding: 32px 16px; color: var(--muted);
+    font-size: 0.9rem; border-top: 1px solid #eee3d6; margin-top: 48px;
+  }
+
+  @media (max-width: 760px) {
+    .intro { grid-template-columns: 1fr; gap: 28px; padding: 32px 0; }
+    .intro-photo { height: 260px; transform: none; }
+  }
+</style>

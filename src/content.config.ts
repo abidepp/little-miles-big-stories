@@ -14,6 +14,12 @@ const blog = defineCollection({
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: z.optional(image()),
+			destination: z.string(),
+			country: z.string(),
+			category: z.enum(['Journal', 'Destination Guide', 'Family Travel']),
+			tripLength: z.string().optional(),      // e.g. "5 days"
+			budget: z.string().optional(),          // e.g. "£1,450 for 3"
+			pdfGuide: z.string().optional(), 
 		}),
 });
 

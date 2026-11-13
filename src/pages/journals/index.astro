@@ -1,0 +1,206 @@
+---
+// src/pages/journals/index.astro
+// Lists every journal as a card. Clicking a card goes to /journals/<file-name>.
+// Journals are read from src/content/journals/*.md — newest first.
+
+const siteTitle = "Little Miles, Big Smiles";
+const instagramUrl = "https://www.instagram.com/"; // TODO: add your handle
+
+const journalFiles = import.meta.glob("../../content/journals/*.md", { eager: true });
+
+const journals = Object.entries(journalFiles)
+  .map(([path, file]: [string, any]) => ({
+    slug: path.split("/").pop()?.replace(".md", ""),
+    title: file.frontmatter?.title ?? "Untitled journal",
+    date: file.frontmatter?.date ? new Date(file.frontmatter.date) : null,
+    location: file.frontmatter?.location ?? "",
+    excerpt: file.frontmatter?.excerpt ?? "",
+    cover: file.frontmatter?.cover ?? "",
+  }))
+  .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+
+const formatDate = (d: Date | null) =>
+  d ? d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Journals | {siteTitle}</title>
+    <meta name="description" content="All our family travel journals, newest first." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <header class="site-header">
+      <a href="/" class="logo">Little Miles<span>,</span> Big Smiles</a>
+      <nav>
+        <a href="/journals" class="active">Journals</a>
+        <a href="/about">About us</a>
+        <a href={instagramUrl} target="_blank" rel="noopener">Instagram</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-intro">
+        <p class="eyebrow">Our travel journals</p>
+        <h1>Every little mile, written down</h1>
+        <p class="lede">
+          Stories, tips and favourite spots from our family trips.
+          {journals.length > 0 && <span> {journals.length} {journals.length === 1 ? "journal" : "journals"} so far.</span>}
+        </p>
+      </section>
+
+      {journals.length > 0 ? (
+        <section class="grid">
+          {journals.map((j) => (
+            <a href={`/journals/${j.slug}`} class="card">
+              <div class="card-img">
+                {j.cover
+                  ? <img src={j.cover} alt={j.title} loading="lazy" />
+                  : <div class="img-placeholder">📸</div>}
+                {j.location && <span class="badge">📍 {j.location}</span>}
+              </div>
+              <div class="card-body">
+                {j.date && <p class="meta">{formatDate(j.date)}</p>}
+                <h2>{j.title}</h2>
+                {j.excerpt && <p class="excerpt">{j.excerpt}</p>}
+                <span class="read-more">Read the journal →</span>
+              </div>
+            </a>
+          ))}
+        </section>
+      ) : (
+        <section class="empty">
+          <p class="empty-icon">🗺️</p>
+          <h2>Our first journal is on its way</h2>
+          <p>New journals land every month. Follow along on Instagram in the meantime.</p>
+          <a href={instagramUrl} class="btn" target="_blank" rel="noopener">Follow on Instagram</a>
+        </section>
+      )}
+    </main>
+
+    <footer class="site-footer">
+      <p>© {new Date().getFullYear()} {siteTitle}. Made with love and lots of snacks.</p>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fffaf3;
+    --surface: #ffffff;
+    --text: #2d2a26;
+    --muted: #6f675d;
+    --accent: #e0703a;
+    --accent-dark: #c25a28;
+    --soft: #fdeee2;
+    --teal: #2f7d78;
+    --radius: 18px;
+    --shadow: 0 6px 24px rgba(45, 42, 38, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Nunito", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, .logo { font-family: "Fraunces", Georgia, serif; line-height: 1.15; }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; width: 100%; height: 100%; object-fit: cover; }
+</style>
+
+<style>
+  /* Header */
+  .site-header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    max-width: 1100px; margin: 0 auto; padding: 20px 16px;
+  }
+  .logo { font-size: 1.35rem; font-weight: 700; }
+  .logo span { color: var(--accent); }
+  nav { display: flex; gap: 20px; font-weight: 600; }
+  nav a:hover, nav a.active { color: var(--accent); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+  /* Intro */
+  .page-intro { padding: 48px 0 36px; max-width: 680px; }
+  .eyebrow {
+    color: var(--teal); font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; font-size: 0.85rem; margin-bottom: 10px;
+  }
+  .page-intro h1 { font-size: clamp(2rem, 6vw, 3.2rem); margin-bottom: 14px; }
+  .lede { font-size: 1.1rem; color: var(--muted); }
+
+  /* Card grid */
+  .grid {
+    display: grid; gap: 28px;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    padding-bottom: 32px;
+  }
+
+  .card {
+    display: flex; flex-direction: column;
+    background: var(--surface); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(45, 42, 38, 0.14); }
+  .card:hover .read-more { color: var(--accent-dark); }
+
+  .card-img { position: relative; height: 210px; }
+  .badge {
+    position: absolute; left: 12px; bottom: 12px;
+    background: rgba(255, 255, 255, 0.92); color: var(--text);
+    padding: 4px 12px; border-radius: 999px;
+    font-size: 0.8rem; font-weight: 700;
+  }
+
+  .card-body { padding: 20px 22px 24px; display: flex; flex-direction: column; flex: 1; }
+  .meta { font-size: 0.85rem; color: var(--teal); font-weight: 700; margin-bottom: 6px; }
+  .card-body h2 { font-size: 1.3rem; margin-bottom: 8px; }
+  .excerpt { color: var(--muted); font-size: 0.95rem; flex: 1; }
+  .read-more { margin-top: 14px; color: var(--accent); font-weight: 700; }
+
+  .img-placeholder {
+    width: 100%; height: 100%;
+    display: grid; place-items: center; font-size: 3rem; background: var(--soft);
+  }
+
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 56px 24px; margin-bottom: 32px;
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .empty-icon { font-size: 3rem; margin-bottom: 8px; }
+  .empty h2 { font-size: 1.5rem; margin-bottom: 8px; }
+  .empty p { color: var(--muted); margin-bottom: 20px; }
+  .btn {
+    display: inline-block; padding: 12px 22px; border-radius: 999px;
+    background: var(--accent); color: #fff; font-weight: 700;
+  }
+  .btn:hover { background: var(--accent-dark); }
+
+  /* Footer */
+  .site-footer {
+    text-align: center; padding: 32px 16px; color: var(--muted);
+    font-size: 0.9rem; border-top: 1px solid #eee3d6; margin-top: 48px;
+  }
+
+  @media (max-width: 720px) {
+    .page-intro { padding: 32px 0 24px; }
+    .card-img { height: 190px; }
+  }
+</style>
