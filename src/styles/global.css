@@ -1,136 +1,198 @@
 /*
-  The CSS in this style tag is based off of Bear Blog's default CSS.
-  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
-  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
- */
+  Global styles, imported once by src/layouts/SiteLayout.astro.
 
-   :root {
-     --cream: #F7F3EE;
-     --sand: #E8DED2;
-     --taupe: #A89584;
-     --terracotta: #B5694A;
-     --ink: #3B3632;
-   }
-body {
-	font-family: var(--font-atkinson);
+  Rules here apply to every page. Styles inside a component's own <style> tag
+  are "scoped": Astro adds a unique attribute to that component's elements so
+  its CSS can't leak out. Use this file for things that genuinely are site-wide.
+*/
+
+/* ---------- Design tokens ---------- */
+:root {
+	color-scheme: light dark;
+
+	--bg: #fffaf3;
+	--surface: #ffffff;
+	--text: #2d2a26;
+	--muted: #6f675d;
+	--accent: #e0703a;
+	--accent-dark: #c25a28;
+	--on-accent: #ffffff;
+	--soft: #fdeee2;
+	--teal: #2f7d78;
+	--border: #eee3d6;
+	--radius: 18px;
+	--shadow: 0 6px 24px rgba(45, 42, 38, 0.08);
+	--shadow-hover: 0 12px 32px rgba(45, 42, 38, 0.14);
+
+	/* Font variables are created by the Fonts API (astro.config.mjs) and
+	   injected by <Font /> in the layout. The fallbacks below are used until they load. */
+	--font-body: var(--font-nunito), system-ui, sans-serif;
+	--font-heading: var(--font-fraunces), Georgia, serif;
+}
+
+/* Dark mode: only the token values change. Every rule that uses var(--bg) etc.
+   picks up the new colours automatically. That's the payoff of using variables. */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #1c1916;
+		--surface: #27231f;
+		--text: #f3ece3;
+		--muted: #b9ad9f;
+		--accent: #f08a55;
+		--accent-dark: #f5a57c;
+		--on-accent: #1c1916;
+		--soft: #33291f;
+		--teal: #6cc2bb;
+		--border: #3a332b;
+		--shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+		--shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.5);
+	}
+}
+
+/* ---------- Reset & base ---------- */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	text-align: left;
-	background: linear-gradient(var(--gray-gradient)) no-repeat;
-	background-size: 100% 600px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	color: rgb(var(--gray-dark));
-	font-size: 20px;
-	line-height: 1.7;
 }
-main {
-	width: 720px;
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 3em 1em;
+
+body {
+	font-family: var(--font-body);
+	background: var(--bg);
+	color: var(--text);
+	line-height: 1.6;
 }
+
 h1,
 h2,
 h3,
-h4,
-h5,
-h6 {
-	margin: 0 0 0.5rem 0;
-	color: rgb(var(--black));
-	line-height: 1.2;
+.logo {
+	font-family: var(--font-heading);
+	line-height: 1.15;
 }
-h1 {
-	font-size: 3.052em;
-}
-h2 {
-	font-size: 2.441em;
-}
-h3 {
-	font-size: 1.953em;
-}
-h4 {
-	font-size: 1.563em;
-}
-h5 {
-	font-size: 1.25em;
-}
-strong,
-b {
-	font-weight: 700;
-}
+
 a {
-	color: var(--accent);
+	color: inherit;
+	text-decoration: none;
 }
-a:hover {
-	color: var(--accent);
-}
-p {
-	margin-bottom: 1em;
-}
-.prose p {
-	margin-bottom: 2em;
-}
-textarea {
-	width: 100%;
-	font-size: 16px;
-}
-input {
-	font-size: 16px;
-}
-table {
-	width: 100%;
-}
+
 img {
+	display: block;
 	max-width: 100%;
 	height: auto;
+}
+
+/* ---------- Accessibility ---------- */
+
+/* Keyboard users need to see where they are. :focus-visible only shows for
+   keyboard navigation, not mouse clicks. */
+:focus-visible {
+	outline: 3px solid var(--accent);
+	outline-offset: 3px;
+	border-radius: 4px;
+}
+
+/* Hidden until a keyboard user tabs to it; lets them jump past the nav. */
+.skip-link {
+	position: absolute;
+	left: 16px;
+	top: -100px;
+	z-index: 10;
+	background: var(--accent);
+	color: var(--on-accent);
+	padding: 10px 16px;
 	border-radius: 8px;
+	font-weight: 700;
 }
-code {
-	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
+.skip-link:focus {
+	top: 16px;
 }
-pre {
-	padding: 1.5em;
-	border-radius: 8px;
-}
-pre > code {
-	all: unset;
-}
-blockquote {
-	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0;
-	font-size: 1.333em;
-}
-hr {
-	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
-}
-@media (max-width: 720px) {
-	body {
-		font-size: 18px;
-	}
-	main {
-		padding: 1em;
+
+/* Respect "reduce motion" in the visitor's OS settings. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
 	}
 }
 
-.sr-only {
-	border: 0;
-	padding: 0;
-	margin: 0;
-	position: absolute !important;
-	height: 1px;
-	width: 1px;
-	overflow: hidden;
-	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
-	clip: rect(1px 1px 1px 1px);
-	/* maybe deprecated but we need to support legacy browsers */
-	clip: rect(1px, 1px, 1px, 1px);
-	/* modern browsers, clip-path works inwards from each corner */
-	clip-path: inset(50%);
-	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
-	white-space: nowrap;
+/* ---------- Shared building blocks ---------- */
+.btn {
+	display: inline-block;
+	padding: 12px 22px;
+	border-radius: 999px;
+	font-weight: 700;
+	transition: transform 0.15s, background 0.15s, color 0.15s;
+}
+.btn:hover {
+	transform: translateY(-2px);
+}
+.btn-primary {
+	background: var(--accent);
+	color: var(--on-accent);
+}
+.btn-primary:hover {
+	background: var(--accent-dark);
+}
+.btn-ghost {
+	border: 2px solid var(--text);
+}
+.btn-ghost:hover {
+	background: var(--text);
+	color: var(--bg);
+}
+
+.actions {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.eyebrow {
+	color: var(--teal);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-size: 0.85rem;
+	margin-bottom: 12px;
+}
+
+.lede {
+	font-size: 1.15rem;
+	color: var(--muted);
+}
+
+.meta {
+	font-size: 0.85rem;
+	color: var(--teal);
+	font-weight: 700;
+	margin-bottom: 6px;
+}
+
+.section {
+	padding-block: clamp(32px, 6vw, 56px);
+}
+.section-title {
+	font-size: 1.8rem;
+	margin-bottom: 24px;
+}
+
+.grid {
+	display: grid;
+	gap: 28px;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.img-placeholder {
+	width: 100%;
+	height: 100%;
+	display: grid;
+	place-items: center;
+	font-size: 3rem;
+	background: var(--soft);
 }

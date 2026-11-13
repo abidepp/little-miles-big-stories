@@ -1,190 +1,245 @@
 ---
+// src/pages/journals/[slug].astro  ->  "/journals/<slug>"
+//
+// DYNAMIC ROUTES
+// The [slug] in the file name is a placeholder. Because this site is static,
+// Astro needs the full list of pages at build time, so it calls getStaticPaths()
+// once. Then it renders this file once per item returned, passing that item's
+// `props` in as Astro.props.
+//
+//   yorkshire-dales.md -> { params: { slug: 'yorkshire-dales' }, props: { entry } }
+//                      -> dist/journals/yorkshire-dales/index.html
 
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { getJournals, formatDate, type Journal } from '../../utils/journals';
+import { INSTAGRAM_URL } from '../../consts';
 
 export async function getStaticPaths() {
-  const journals = await getCollection('journals');
-  return journals.map((entry) => ({
-    params: { slug: entry.id },   // "yorkshire-dales"
-    props: { entry },
-  }));
+	const journals = await getJournals();
+	return journals.map((entry) => ({
+		params: { slug: entry.id },
+		props: { entry },
+	}));
+}
+
+interface Props {
+	entry: Journal;
 }
 
 const { entry } = Astro.props;
+
+// render() turns the Markdown body into a component we can place in the page.
 const { Content } = await render(entry);
-const frontmatter = entry.data;   // keeps the rest of the template working unchanged
 
-const siteTitle = "Little Miles, Big Smiles";
-const instagramUrl = "https://www.instagram.com/";
+const { title, excerpt, location, date, cover, coverAlt, destination, country, category, tripLength, budget, pdfGuide } =
+	entry.data;
 
-const date = frontmatter.date;    // already a Date thanks to z.coerce.date()
-const formattedDate = date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+// <Image /> makes the on-page version; getImage() makes a URL we can put in a
+// <meta> tag for social previews (WhatsApp etc. prefer JPEG around 1200px wide).
+const ogImage = cover ? (await getImage({ src: cover, width: 1200, format: 'jpeg' })).src : undefined;
 
+// "Trip at a glance": only show the facts this journal actually has.
+const glance = [
+	{ label: 'Where', value: [destination, country].filter(Boolean).join(', ') },
+	{ label: 'Trip length', value: tripLength },
+	{ label: 'Budget', value: budget },
+	{ label: 'Type', value: category },
+].filter((fact) => fact.value);
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{frontmatter.title} | {siteTitle}</title>
-    <meta name="description" content={frontmatter.excerpt ?? ""} />
-    {frontmatter.cover && <meta property="og:image" content={frontmatter.cover} />}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+<SiteLayout title={title} description={excerpt} image={ogImage} width="narrow">
+	<a href="/journals" class="back">← All journals</a>
 
-  <body>
-    <header class="site-header">
-      <a href="/" class="logo">Little Miles<span>,</span> Big Smiles</a>
-      <nav>
-        <a href="/journals" class="active">Journals</a>
-        <a href="/about">About us</a>
-        <a href={instagramUrl} target="_blank" rel="noopener">Instagram</a>
-      </nav>
-    </header>
+	<article>
+		<header class="post-header">
+			<p class="meta">
+				{location && <span>📍 {location} · </span>}
+				<time datetime={date.toISOString()}>{formatDate(date)}</time>
+			</p>
+			<h1>{title}</h1>
+			{excerpt && <p class="lede">{excerpt}</p>}
+		</header>
 
-    <main>
-      <a href="/journals" class="back">← All journals</a>
+		{
+			cover && (
+				// Same transition:name as the card, so the photo morphs between pages.
+				<div class="cover" transition:name={`cover-${entry.id}`}>
+					<Image src={cover} alt={coverAlt ?? ''} widths={[760, 1520]} sizes="(max-width: 760px) 100vw, 760px" loading="eager" />
+				</div>
+			)
+		}
 
-      <article>
-        <header class="post-header">
-          <p class="meta">
-            {frontmatter.location && <span>📍 {frontmatter.location}</span>}
-            {frontmatter.location && formattedDate && <span> · </span>}
-            {formattedDate && <time datetime={date?.toISOString()}>{formattedDate}</time>}
-          </p>
-          <h1>{frontmatter.title}</h1>
-          {frontmatter.excerpt && <p class="lede">{frontmatter.excerpt}</p>}
-        </header>
+		{
+			glance.length > 0 && (
+				<aside class="glance" aria-label="Trip at a glance">
+					<h2>Trip at a glance</h2>
+					<dl>
+						{glance.map((fact) => (
+							<div>
+								<dt>{fact.label}</dt>
+								<dd>{fact.value}</dd>
+							</div>
+						))}
+					</dl>
+					{pdfGuide && (
+						<a href={pdfGuide} class="btn btn-primary" download>
+							Download the PDF guide
+						</a>
+					)}
+				</aside>
+			)
+		}
 
-        {frontmatter.cover && (
-          <div class="cover">
-            <img src={frontmatter.cover} alt={frontmatter.title} />
-          </div>
-        )}
+		<div class="prose">
+			<Content />
+		</div>
+	</article>
 
-        <div class="prose">
-          <Content />
-        </div>
-      </article>
-
-      <section class="end-card">
-        <h2>Enjoyed this journal?</h2>
-        <p>There's a new one every month. Follow along on Instagram for the everyday moments.</p>
-        <div class="actions">
-          <a href="/journals" class="btn btn-primary">More journals</a>
-          <a href={instagramUrl} class="btn btn-ghost" target="_blank" rel="noopener">Instagram</a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <p>© {new Date().getFullYear()} {siteTitle}. Made with love and lots of snacks.</p>
-    </footer>
-  </body>
-</html>
-
-<style is:global>
-  :root {
-    --bg: #fffaf3;
-    --surface: #ffffff;
-    --text: #2d2a26;
-    --muted: #6f675d;
-    --accent: #e0703a;
-    --accent-dark: #c25a28;
-    --soft: #fdeee2;
-    --teal: #2f7d78;
-    --radius: 18px;
-    --shadow: 0 6px 24px rgba(45, 42, 38, 0.08);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: "Nunito", system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-  }
-
-  h1, h2, h3, .logo { font-family: "Fraunces", Georgia, serif; line-height: 1.15; }
-  a { color: inherit; text-decoration: none; }
-
-  /* Styles for the Markdown content of each journal */
-  .prose { font-size: 1.1rem; line-height: 1.8; }
-  .prose > * + * { margin-top: 1.2em; }
-  .prose h2 { font-size: 1.7rem; margin-top: 2em; }
-  .prose h3 { font-size: 1.3rem; margin-top: 1.6em; }
-  .prose a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-  .prose ul, .prose ol { padding-left: 1.4em; }
-  .prose li + li { margin-top: 0.4em; }
-  .prose img {
-    display: block; width: 100%; height: auto;
-    border-radius: 14px; margin: 1.6em 0; box-shadow: var(--shadow);
-  }
-  .prose blockquote {
-    border-left: 4px solid var(--accent); background: var(--soft);
-    padding: 14px 20px; border-radius: 0 12px 12px 0; font-style: italic;
-  }
-  .prose hr { border: none; border-top: 2px dashed #eadbc9; margin: 2.4em 0; }
-  .prose strong { color: var(--text); }
-</style>
+	<section class="end-card">
+		<h2>Enjoyed this journal?</h2>
+		<p>There's a new one every month. Follow along on Instagram for the everyday moments.</p>
+		<div class="actions">
+			<a href="/journals" class="btn btn-primary">More journals</a>
+			<a href={INSTAGRAM_URL} class="btn btn-ghost" target="_blank" rel="noopener">Instagram</a>
+		</div>
+	</section>
+</SiteLayout>
 
 <style>
-  /* Header */
-  .site-header {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 12px;
-    max-width: 1100px; margin: 0 auto; padding: 20px 16px;
-  }
-  .logo { font-size: 1.35rem; font-weight: 700; }
-  .logo span { color: var(--accent); }
-  nav { display: flex; gap: 20px; font-weight: 600; }
-  nav a:hover, nav a.active { color: var(--accent); }
+	.back {
+		display: inline-block;
+		margin: 16px 0 8px;
+		font-weight: 700;
+		color: var(--muted);
+	}
+	.back:hover {
+		color: var(--accent);
+	}
 
-  main { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+	.post-header {
+		padding: 20px 0 28px;
+	}
+	.post-header .meta {
+		font-size: 0.9rem;
+		margin-bottom: 10px;
+	}
+	.post-header h1 {
+		font-size: clamp(2rem, 6vw, 3rem);
+		margin-bottom: 14px;
+	}
 
-  .back { display: inline-block; margin: 16px 0 8px; font-weight: 700; color: var(--muted); }
-  .back:hover { color: var(--accent); }
+	.cover {
+		border-radius: var(--radius);
+		overflow: hidden;
+		box-shadow: var(--shadow);
+		margin-bottom: 36px;
+	}
+	.cover img {
+		width: 100%;
+		max-height: 460px;
+		object-fit: cover;
+	}
 
-  .post-header { padding: 20px 0 28px; }
-  .meta { font-size: 0.9rem; color: var(--teal); font-weight: 700; margin-bottom: 10px; }
-  .post-header h1 { font-size: clamp(2rem, 6vw, 3rem); margin-bottom: 14px; }
-  .lede { font-size: 1.2rem; color: var(--muted); }
+	.glance {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 24px;
+		margin-bottom: 36px;
+	}
+	.glance h2 {
+		font-size: 1.2rem;
+		margin-bottom: 14px;
+	}
+	.glance dl {
+		display: grid;
+		gap: 14px;
+		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	}
+	.glance dt {
+		font-size: 0.8rem;
+		color: var(--teal);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+	.glance dd {
+		font-weight: 700;
+	}
+	.glance .btn {
+		margin-top: 18px;
+	}
 
-  .cover {
-    border-radius: var(--radius); overflow: hidden;
-    box-shadow: var(--shadow); margin-bottom: 36px;
-  }
-  .cover img { display: block; width: 100%; max-height: 460px; object-fit: cover; }
+	/*
+	  Styling Markdown output: the HTML inside <Content /> is generated from your .md file,
+	  not written in this component, so Astro doesn't add the scope attribute to it.
+	  :global(...) says "match these elements even though they aren't ours",
+	  while `.prose` in front still keeps the rules limited to this page.
+	*/
+	.prose {
+		font-size: 1.1rem;
+		line-height: 1.8;
+	}
+	.prose > :global(* + *) {
+		margin-top: 1.2em;
+	}
+	.prose :global(h2) {
+		font-size: 1.7rem;
+		margin-top: 2em;
+	}
+	.prose :global(h3) {
+		font-size: 1.3rem;
+		margin-top: 1.6em;
+	}
+	.prose :global(a) {
+		color: var(--accent);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.prose :global(ul),
+	.prose :global(ol) {
+		padding-left: 1.4em;
+	}
+	.prose :global(li + li) {
+		margin-top: 0.4em;
+	}
+	.prose :global(img) {
+		width: 100%;
+		border-radius: 14px;
+		margin: 1.6em 0;
+		box-shadow: var(--shadow);
+	}
+	.prose :global(blockquote) {
+		border-left: 4px solid var(--accent);
+		background: var(--soft);
+		padding: 14px 20px;
+		border-radius: 0 12px 12px 0;
+		font-style: italic;
+	}
+	.prose :global(hr) {
+		border: none;
+		border-top: 2px dashed var(--border);
+		margin: 2.4em 0;
+	}
 
-  /* End card */
-  .end-card {
-    text-align: center; background: var(--soft);
-    border-radius: var(--radius); padding: 40px 24px; margin-top: 56px;
-  }
-  .end-card h2 { font-size: 1.6rem; margin-bottom: 8px; }
-  .end-card p { color: var(--muted); margin-bottom: 20px; }
-  .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-
-  .btn {
-    display: inline-block; padding: 12px 22px; border-radius: 999px;
-    font-weight: 700; transition: transform 0.15s, background 0.15s;
-  }
-  .btn:hover { transform: translateY(-2px); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-dark); }
-  .btn-ghost { border: 2px solid var(--text); }
-  .btn-ghost:hover { background: var(--text); color: var(--bg); }
-
-  /* Footer */
-  .site-footer {
-    text-align: center; padding: 32px 16px; color: var(--muted);
-    font-size: 0.9rem; border-top: 1px solid #eee3d6; margin-top: 48px;
-  }
+	.end-card {
+		text-align: center;
+		background: var(--soft);
+		border-radius: var(--radius);
+		padding: 40px 24px;
+		margin-top: 56px;
+	}
+	.end-card h2 {
+		font-size: 1.6rem;
+		margin-bottom: 8px;
+	}
+	.end-card p {
+		color: var(--muted);
+		margin-bottom: 20px;
+	}
+	.end-card .actions {
+		justify-content: center;
+	}
 </style>

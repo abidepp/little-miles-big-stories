@@ -1,0 +1,159 @@
+---
+// The page shell every page shares: <head>, header, footer and global styles.
+//
+// HOW A LAYOUT WORKS
+// A page writes:   <SiteLayout title="Journals"> ...page content... </SiteLayout>
+//  - `title="Journals"` arrives here as a prop, read from Astro.props below.
+//  - "...page content..." is inserted wherever this file says <slot />.
+//
+// Everything in this frontmatter (the --- block) runs at BUILD time on your
+// machine (or Cloudflare's build server), never in the visitor's browser.
+// The output is plain HTML.
+
+import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+import { SITE_TITLE, SITE_DESCRIPTION, INSTAGRAM_URL } from '../consts';
+import '../styles/global.css'; // importing CSS here bundles it into every page that uses this layout
+
+interface Props {
+	title?: string; // omit on the homepage to show just the site name
+	description?: string;
+	image?: string; // social-share image URL
+	width?: 'wide' | 'narrow'; // narrow suits long-form reading
+}
+
+const { title, description = SITE_DESCRIPTION, image, width = 'wide' } = Astro.props;
+
+const pageTitle = title ? `${title} | ${SITE_TITLE}` : SITE_TITLE;
+
+// Astro.site comes from `site` in astro.config.mjs; Astro.url is the URL of the page being built.
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = image ? new URL(image, Astro.site) : undefined;
+
+// Highlight the nav link for the section we're in.
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+const navLinks = [
+	{ href: '/journals', label: 'Journals' },
+	{ href: '/about', label: 'About us' },
+];
+function ariaCurrent(href: string) {
+	if (currentPath === href) return 'page'; // this exact page
+	if (currentPath.startsWith(href + '/')) return 'true'; // a page inside this section
+	return undefined; // attribute is left out entirely
+}
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{pageTitle}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="sitemap" href="/sitemap-index.xml" />
+		<link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href={new URL('rss.xml', Astro.site)} />
+
+		<!-- Open Graph: what WhatsApp / Facebook / iMessage show when someone shares a link -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={SITE_TITLE} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalURL} />
+		{ogImageURL && <meta property="og:image" content={ogImageURL} />}
+
+		<!-- Self-hosted fonts, downloaded at build time (see `fonts` in astro.config.mjs) -->
+		<Font cssVariable="--font-fraunces" preload />
+		<Font cssVariable="--font-nunito" preload />
+
+		<!-- Turns page navigations into smooth animated transitions -->
+		<ClientRouter />
+	</head>
+
+	<body>
+		<a href="#main" class="skip-link">Skip to content</a>
+
+		<header class="site-header">
+			<a href="/" class="logo">Little Miles<span>,</span> Big Smiles</a>
+			<nav aria-label="Main">
+				{navLinks.map((link) => (
+					<a href={link.href} aria-current={ariaCurrent(link.href)}>{link.label}</a>
+				))}
+				<a href={INSTAGRAM_URL} target="_blank" rel="noopener">Instagram</a>
+			</nav>
+		</header>
+
+		<main id="main" class:list={['container', width]}>
+			<slot />
+		</main>
+
+		<footer class="site-footer">
+			<p>© {new Date().getFullYear()} {SITE_TITLE}. Made with love and lots of snacks.</p>
+			<p class="footer-links">
+				<a href={INSTAGRAM_URL} target="_blank" rel="noopener">Instagram</a>
+				<span aria-hidden="true">·</span>
+				<a href="/rss.xml">RSS feed</a>
+			</p>
+		</footer>
+	</body>
+</html>
+
+<style>
+	/* Scoped styles: these only affect elements written in THIS file. */
+	.site-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 12px;
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 20px 16px;
+	}
+	.logo {
+		font-size: 1.35rem;
+		font-weight: 700;
+	}
+	.logo span {
+		color: var(--accent);
+	}
+	nav {
+		display: flex;
+		gap: 20px;
+		font-weight: 600;
+	}
+	nav a:hover,
+	nav a[aria-current] {
+		color: var(--accent);
+	}
+
+	.container {
+		margin: 0 auto;
+		padding: 0 16px;
+	}
+	.wide {
+		max-width: 1100px;
+	}
+	.narrow {
+		max-width: 760px;
+	}
+
+	.site-footer {
+		text-align: center;
+		padding: 32px 16px;
+		color: var(--muted);
+		font-size: 0.9rem;
+		border-top: 1px solid var(--border);
+		margin-top: 48px;
+	}
+	.footer-links {
+		margin-top: 6px;
+		display: flex;
+		gap: 8px;
+		justify-content: center;
+	}
+	.footer-links a:hover {
+		color: var(--accent);
+	}
+</style>

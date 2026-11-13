@@ -1,264 +1,233 @@
 ---
-// src/pages/about.astro
-// "About us" page for Little Miles, Big Smiles.
+// src/pages/about.astro  ->  "/about"
 // Edit the text in [square brackets] so it's in your own words.
 
-const siteTitle = "Little Miles, Big Smiles";
-const instagramUrl = "https://www.instagram.com/"; // TODO: add your handle
-const linktreeUrl = "https://linktr.ee/";          // TODO: add your Linktree
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { INSTAGRAM_URL, LINKTREE_URL } from '../consts';
 
-// Put a family photo in public/images/ and set the path here, e.g. "/images/family.jpg"
-const familyPhoto = "";
+// To add a family photo: put it in src/assets/images/, then import it, e.g.
+//   import familyPhoto from '../assets/images/family.jpg';
+// and swap the placeholder below for <Image src={familyPhoto} alt="..." />
+// (import { Image } from 'astro:assets'). Imported images get optimised automatically.
+const familyPhoto = null;
 
 const whatYoullFind = [
-  { icon: "📖", title: "Honest journals", text: "A new trip story every month: what we did, what worked, and what we'd skip next time." },
-  { icon: "🧸", title: "Little-one friendly tips", text: "Buggy-friendly paths, nap-time planning, snack stops and places that welcome small children." },
-  { icon: "📍", title: "Places worth the miles", text: "Our favourite parks, beaches, castles and cafés, so you can plan your own family days out." },
+	{ icon: '📖', title: 'Honest journals', text: 'A new trip story every month: what we did, what worked, and what we\'d skip next time.' },
+	{ icon: '🧸', title: 'Little-one friendly tips', text: 'Buggy-friendly paths, nap-time planning, snack stops and places that welcome small children.' },
+	{ icon: '📍', title: 'Places worth the miles', text: 'Our favourite parks, beaches, castles and cafés, so you can plan your own family days out.' },
 ];
 
 const funFacts = [
-  { label: "Home base", value: "[Your town], UK" },
-  { label: "Originally from", value: "India" },
-  { label: "Travel crew", value: "[2 grown-ups + 1 little explorer]" },
-  { label: "Can't travel without", value: "[Snacks. Always snacks.]" },
+	{ label: 'Home base', value: '[Your town], UK' },
+	{ label: 'Originally from', value: 'India' },
+	{ label: 'Travel crew', value: '[2 grown-ups + 1 little explorer]' },
+	{ label: "Can't travel without", value: '[Snacks. Always snacks.]' },
 ];
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>About us | {siteTitle}</title>
-    <meta name="description" content="Meet the family behind Little Miles, Big Smiles." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+<SiteLayout title="About us" description="Meet the family behind Little Miles, Big Smiles.">
+	<section class="intro">
+		<div class="intro-text">
+			<p class="eyebrow">About us</p>
+			<h1>Hello, we're the family behind the miles 👋</h1>
+			<p class="lede">
+				[We're a family of three who moved from India to the UK and decided to explore our new home one little trip at a
+				time.]
+			</p>
+		</div>
+		<div class="intro-photo">
+			{familyPhoto ?? <div class="img-placeholder" aria-hidden="true">👨‍👩‍👧</div>}
+		</div>
+	</section>
 
-  <body>
-    <header class="site-header">
-      <a href="/" class="logo">Little Miles<span>,</span> Big Smiles</a>
-      <nav>
-        <a href="/journals">Journals</a>
-        <a href="/about" class="active">About us</a>
-        <a href={instagramUrl} target="_blank" rel="noopener">Instagram</a>
-      </nav>
-    </header>
+	<section class="story">
+		<h2>Our story</h2>
+		<p>
+			[When we moved to the UK, everything was new: the weather, the trains, the endless choice of places to visit. With a
+			little one in tow, every outing felt like a small adventure, and every adventure came with a story worth
+			remembering.]
+		</p>
+		<p>
+			[We started this journal to keep those memories in one place, and to share what we've learned along the way.
+			Travelling with a young child isn't always smooth, but the little moments (the first glimpse of the sea, a picnic in
+			the rain, a new favourite playground) make every mile worth it.]
+		</p>
+		<p>
+			[Whether you're new to the UK, planning your first family trip, or just looking for ideas for the weekend, we hope
+			our stories help you find your own big smiles.]
+		</p>
+	</section>
 
-    <main>
-      <!-- Intro with photo -->
-      <section class="intro">
-        <div class="intro-text">
-          <p class="eyebrow">About us</p>
-          <h1>Hello, we're the family behind the miles 👋</h1>
-          <p class="lede">
-            [We're a family of three who moved from India to the UK and decided to explore
-            our new home one little trip at a time.]
-          </p>
-        </div>
-        <div class="intro-photo">
-          {familyPhoto
-            ? <img src={familyPhoto} alt="Our family on one of our trips" />
-            : <div class="img-placeholder">👨‍👩‍👧</div>}
-        </div>
-      </section>
+	<section class="section">
+		<h2 class="section-title">What you'll find here</h2>
+		<div class="features">
+			{
+				whatYoullFind.map((item) => (
+					<div class="feature">
+						<p class="feature-icon" aria-hidden="true">{item.icon}</p>
+						<h3>{item.title}</h3>
+						<p>{item.text}</p>
+					</div>
+				))
+			}
+		</div>
+	</section>
 
-      <!-- Our story -->
-      <section class="story">
-        <h2>Our story</h2>
-        <p>
-          [When we moved to the UK, everything was new: the weather, the trains, the endless
-          choice of places to visit. With a little one in tow, every outing felt like a small
-          adventure, and every adventure came with a story worth remembering.]
-        </p>
-        <p>
-          [We started this journal to keep those memories in one place, and to share what
-          we've learned along the way. Travelling with a young child isn't always smooth, but
-          the little moments (the first glimpse of the sea, a picnic in the rain, a new
-          favourite playground) make every mile worth it.]
-        </p>
-        <p>
-          [Whether you're new to the UK, planning your first family trip, or just looking for
-          ideas for the weekend, we hope our stories help you find your own big smiles.]
-        </p>
-      </section>
+	<section class="facts">
+		<h2>A few things about us</h2>
+		<dl>
+			{
+				funFacts.map((f) => (
+					<div class="fact">
+						<dt>{f.label}</dt>
+						<dd>{f.value}</dd>
+					</div>
+				))
+			}
+		</dl>
+	</section>
 
-      <!-- What you'll find -->
-      <section class="section">
-        <h2 class="section-title">What you'll find here</h2>
-        <div class="features">
-          {whatYoullFind.map((item) => (
-            <div class="feature">
-              <p class="feature-icon">{item.icon}</p>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <!-- Fun facts -->
-      <section class="facts">
-        <h2>A few things about us</h2>
-        <dl>
-          {funFacts.map((f) => (
-            <div class="fact">
-              <dt>{f.label}</dt>
-              <dd>{f.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      <!-- CTA -->
-      <section class="section cta">
-        <h2>Come along for the journey</h2>
-        <p>Everyday snaps live on Instagram, and a new journal arrives here every month.</p>
-        <div class="actions">
-          <a href="/journals" class="btn btn-primary">Read our journals</a>
-          <a href={instagramUrl} class="btn btn-ghost" target="_blank" rel="noopener">Instagram</a>
-          <a href={linktreeUrl} class="btn btn-ghost" target="_blank" rel="noopener">All our links</a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <p>© {new Date().getFullYear()} {siteTitle}. Made with love and lots of snacks.</p>
-    </footer>
-  </body>
-</html>
-
-<style is:global>
-  :root {
-    --bg: #fffaf3;
-    --surface: #ffffff;
-    --text: #2d2a26;
-    --muted: #6f675d;
-    --accent: #e0703a;
-    --accent-dark: #c25a28;
-    --soft: #fdeee2;
-    --teal: #2f7d78;
-    --radius: 18px;
-    --shadow: 0 6px 24px rgba(45, 42, 38, 0.08);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: "Nunito", system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-  }
-
-  h1, h2, h3, .logo { font-family: "Fraunces", Georgia, serif; line-height: 1.15; }
-  a { color: inherit; text-decoration: none; }
-  img { display: block; width: 100%; height: 100%; object-fit: cover; }
-</style>
+	<section class="section cta">
+		<h2>Come along for the journey</h2>
+		<p>Everyday snaps live on Instagram, and a new journal arrives here every month.</p>
+		<div class="actions">
+			<a href="/journals" class="btn btn-primary">Read our journals</a>
+			<a href={INSTAGRAM_URL} class="btn btn-ghost" target="_blank" rel="noopener">Instagram</a>
+			<a href={LINKTREE_URL} class="btn btn-ghost" target="_blank" rel="noopener">All our links</a>
+		</div>
+	</section>
+</SiteLayout>
 
 <style>
-  /* Header */
-  .site-header {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 12px;
-    max-width: 1100px; margin: 0 auto; padding: 20px 16px;
-  }
-  .logo { font-size: 1.35rem; font-weight: 700; }
-  .logo span { color: var(--accent); }
-  nav { display: flex; gap: 20px; font-weight: 600; }
-  nav a:hover, nav a.active { color: var(--accent); }
+	.intro {
+		display: grid;
+		grid-template-columns: 1.1fr 1fr;
+		gap: 40px;
+		align-items: center;
+		padding: 48px 0;
+	}
+	.eyebrow {
+		margin-bottom: 10px;
+	}
+	.intro h1 {
+		font-size: clamp(2rem, 5.5vw, 3.2rem);
+		margin-bottom: 16px;
+	}
+	.intro-photo {
+		height: 360px;
+		border-radius: var(--radius);
+		overflow: hidden;
+		box-shadow: var(--shadow);
+		transform: rotate(1.5deg);
+	}
+	.intro-photo :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.intro-photo .img-placeholder {
+		font-size: 5rem;
+	}
 
-  main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+	.story {
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 40px 0;
+	}
+	.story h2 {
+		font-size: 1.9rem;
+		margin-bottom: 18px;
+	}
+	.story p {
+		font-size: 1.08rem;
+		margin-bottom: 18px;
+	}
 
-  /* Intro */
-  .intro {
-    display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px;
-    align-items: center; padding: 48px 0;
-  }
-  .eyebrow {
-    color: var(--teal); font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.08em; font-size: 0.85rem; margin-bottom: 10px;
-  }
-  .intro h1 { font-size: clamp(2rem, 5.5vw, 3.2rem); margin-bottom: 16px; }
-  .lede { font-size: 1.15rem; color: var(--muted); }
-  .intro-photo {
-    height: 360px; border-radius: var(--radius); overflow: hidden;
-    box-shadow: var(--shadow); transform: rotate(1.5deg);
-  }
-  .img-placeholder {
-    width: 100%; height: 100%;
-    display: grid; place-items: center; font-size: 5rem; background: var(--soft);
-  }
+	.section-title {
+		text-align: center;
+	}
+	.features {
+		display: grid;
+		gap: 24px;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	}
+	.feature {
+		background: var(--surface);
+		border-radius: var(--radius);
+		padding: 28px 24px;
+		box-shadow: var(--shadow);
+	}
+	.feature-icon {
+		font-size: 2.2rem;
+		margin-bottom: 10px;
+	}
+	.feature h3 {
+		font-size: 1.25rem;
+		margin-bottom: 8px;
+	}
+	.feature p {
+		color: var(--muted);
+	}
 
-  /* Story */
-  .story {
-    max-width: 720px; margin: 0 auto; padding: 40px 0;
-  }
-  .story h2 { font-size: 1.9rem; margin-bottom: 18px; }
-  .story p { font-size: 1.08rem; margin-bottom: 18px; color: var(--text); }
+	.facts {
+		background: var(--soft);
+		border-radius: var(--radius);
+		padding: 48px 24px;
+		margin: 24px 0;
+		text-align: center;
+	}
+	.facts h2 {
+		font-size: 1.8rem;
+		margin-bottom: 28px;
+	}
+	.facts dl {
+		display: grid;
+		gap: 16px;
+		max-width: 900px;
+		margin: 0 auto;
+		grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+	}
+	.fact {
+		background: var(--surface);
+		border-radius: 14px;
+		padding: 18px 16px;
+	}
+	.fact dt {
+		font-size: 0.8rem;
+		color: var(--teal);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		margin-bottom: 4px;
+	}
+	.fact dd {
+		font-weight: 700;
+	}
 
-  /* Features */
-  .section { padding: 48px 0; }
-  .section-title { font-size: 1.8rem; margin-bottom: 24px; text-align: center; }
-  .features {
-    display: grid; gap: 24px;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
-  .feature {
-    background: var(--surface); border-radius: var(--radius);
-    padding: 28px 24px; box-shadow: var(--shadow);
-  }
-  .feature-icon { font-size: 2.2rem; margin-bottom: 10px; }
-  .feature h3 { font-size: 1.25rem; margin-bottom: 8px; }
-  .feature p { color: var(--muted); }
+	.cta {
+		text-align: center;
+	}
+	.cta h2 {
+		font-size: 1.8rem;
+		margin-bottom: 8px;
+	}
+	.cta p {
+		color: var(--muted);
+		margin-bottom: 24px;
+	}
+	.cta .actions {
+		justify-content: center;
+	}
 
-  /* Facts */
-  .facts {
-    background: var(--soft); border-radius: var(--radius);
-    padding: 48px 24px; margin: 24px 0; text-align: center;
-  }
-  .facts h2 { font-size: 1.8rem; margin-bottom: 28px; }
-  .facts dl {
-    display: grid; gap: 16px; max-width: 900px; margin: 0 auto;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  }
-  .fact {
-    background: var(--surface); border-radius: 14px; padding: 18px 16px;
-  }
-  .fact dt {
-    font-size: 0.8rem; color: var(--teal); font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;
-  }
-  .fact dd { font-weight: 700; }
-
-  /* CTA */
-  .cta { text-align: center; }
-  .cta h2 { font-size: 1.8rem; margin-bottom: 8px; }
-  .cta p { color: var(--muted); margin-bottom: 24px; }
-  .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-
-  .btn {
-    display: inline-block; padding: 12px 22px; border-radius: 999px;
-    font-weight: 700; transition: transform 0.15s, background 0.15s;
-  }
-  .btn:hover { transform: translateY(-2px); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-dark); }
-  .btn-ghost { border: 2px solid var(--text); }
-  .btn-ghost:hover { background: var(--text); color: var(--bg); }
-
-  /* Footer */
-  .site-footer {
-    text-align: center; padding: 32px 16px; color: var(--muted);
-    font-size: 0.9rem; border-top: 1px solid #eee3d6; margin-top: 48px;
-  }
-
-  @media (max-width: 760px) {
-    .intro { grid-template-columns: 1fr; gap: 28px; padding: 32px 0; }
-    .intro-photo { height: 260px; transform: none; }
-  }
+	@media (max-width: 760px) {
+		.intro {
+			grid-template-columns: 1fr;
+			gap: 28px;
+			padding: 32px 0;
+		}
+		.intro-photo {
+			height: 260px;
+			transform: none;
+		}
+	}
 </style>

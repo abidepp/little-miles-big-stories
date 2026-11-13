@@ -3,7 +3,8 @@ title: "A Weekend in the Yorkshire Dales"
 date: 2026-10-15
 location: "Yorkshire, UK"
 excerpt: "Waterfalls, muddy wellies and the best scones we've ever had."
-cover: "/images/wales/coverphoto.png"
+cover: "../../assets/images/wales/coverphoto.png"
+coverAlt: "TODO: describe what is in the photo"
 ---
 
 
@@ -13,7 +14,7 @@ We set off early on Saturday with a car full of snacks...
 
 The paths were buggy-friendly most of the way.
 
-![Our little one at the falls](/images/wales/coverphoto.png)
+![Our little one at the falls](../../assets/images/wales/coverphoto.png)
 
 ## Our tips for families
 

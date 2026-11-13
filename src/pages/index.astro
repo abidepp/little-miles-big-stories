@@ -1,289 +1,150 @@
 ---
-import { getCollection } from 'astro:content';
+// src/pages/index.astro  ->  "/"
+//
+// DATA FLOW, STEP 3: a page asks for data, then hands it to components.
+//   content.config.ts (schema) -> getJournals() -> this page -> <JournalCard journal={...} />
 
-// src/pages/index.astro
-// Homepage for Little Miles, Big Smiles.
-// Journals are read from src/content/journals/*.md — newest first.
-// If the folder is empty, a friendly placeholder shows instead.
+import SiteLayout from '../layouts/SiteLayout.astro';
+import JournalCard from '../components/JournalCard.astro';
+import { getJournals } from '../utils/journals';
+import { SITE_DESCRIPTION, INSTAGRAM_URL, LINKTREE_URL } from '../consts';
 
-const siteTitle = "Little Miles, Big Smiles";
-const tagline = "Family adventures, one small step at a time.";
-const instagramUrl = "https://www.instagram.com/"; // TODO: add your handle
-const linktreeUrl = "https://linktr.ee/";          // TODO: add your Linktree
-
-const journals = (await getCollection('journals'))
-  .map((entry) => ({
-    slug: entry.id,
-    title: entry.data.title,
-    date: entry.data.date,
-    location: entry.data.location ?? "",
-    excerpt: entry.data.excerpt ?? "",
-    cover: entry.data.cover ?? "",
-  }))
-  .sort((a, b) => b.date.getTime() - a.date.getTime());
-
+const journals = await getJournals(); // already newest first
 const featured = journals[0];
 const recent = journals.slice(1, 7);
-
-const formatDate = (d: Date | null) =>
-  d ? d.toLocaleDateString("en-GB", { month: "long", year: "numeric" }) : "";
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{siteTitle}</title>
-    <meta name="description" content={tagline} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+<SiteLayout>
+	<section class="hero">
+		<p class="eyebrow">A family travel journal</p>
+		<h1>Little miles.<br />Big smiles.</h1>
+		<p class="lede">
+			{SITE_DESCRIPTION} Real trips, honest tips and the small moments that make travelling with little ones worth it.
+		</p>
+		<div class="actions">
+			<a href="#latest" class="btn btn-primary">Read the journals</a>
+			<a href="/about" class="btn btn-ghost">Meet the family</a>
+		</div>
+	</section>
 
-  <body>
-    <!-- Header -->
-    <header class="site-header">
-      <a href="/" class="logo">Little Miles<span>,</span> Big Smiles</a>
-      <nav>
-        <a href="/journals">Journals</a>
-        <a href="/about">About us</a>
-        <a href={instagramUrl} target="_blank" rel="noopener">Instagram</a>
-      </nav>
-    </header>
+	<section id="latest" class="section">
+		<h2 class="section-title">Latest journal</h2>
+		{
+			featured ? (
+				<JournalCard journal={featured} featured />
+			) : (
+				<div class="empty">
+					<p class="empty-icon" aria-hidden="true">🗺️</p>
+					<h3>Our first story is on its way</h3>
+					<p>New journals land every month. Follow along on Instagram in the meantime.</p>
+					<a href={INSTAGRAM_URL} class="btn btn-primary" target="_blank" rel="noopener">Follow on Instagram</a>
+				</div>
+			)
+		}
+	</section>
 
-    <main>
-      <!-- Hero -->
-      <section class="hero">
-        <p class="eyebrow">A family travel journal</p>
-        <h1>Little miles.<br />Big smiles.</h1>
-        <p class="lede">{tagline} Real trips, honest tips and the small moments that make travelling with little ones worth it.</p>
-        <div class="hero-actions">
-          <a href="#latest" class="btn btn-primary">Read the journals</a>
-          <a href="/about" class="btn btn-ghost">Meet the family</a>
-        </div>
-      </section>
+	{
+		recent.length > 0 && (
+			<section class="section">
+				<h2 class="section-title">More stories</h2>
+				<div class="grid">
+					{recent.map((journal) => (
+						<JournalCard journal={journal} />
+					))}
+				</div>
+				<div class="actions center">
+					<a href="/journals" class="btn btn-ghost">See all journals</a>
+				</div>
+			</section>
+		)
+	}
 
-      <!-- Featured journal -->
-      <section id="latest" class="section">
-        <h2 class="section-title">Latest journal</h2>
+	<section class="about">
+		<h2>Hello, we're the family behind the miles 👋</h2>
+		<p>
+			We swapped India for the UK and decided to explore our new home one trip at a time, with a little one in tow. This
+			is where we keep our stories, tips and favourite places, so you can plan your own family adventures with a bit
+			more confidence.
+		</p>
+		<a href="/about" class="btn btn-primary">Our story</a>
+	</section>
 
-        {featured ? (
-          <a href={`/journals/${featured.slug}`} class="featured">
-            <div class="featured-img">
-              {featured.cover
-                ? <img src={featured.cover} alt={featured.title} loading="eager" />
-                : <div class="img-placeholder">🧳</div>}
-            </div>
-            <div class="featured-body">
-              <p class="meta">{featured.location}{featured.location && featured.date && " · "}{formatDate(featured.date)}</p>
-              <h3>{featured.title}</h3>
-              <p>{featured.excerpt}</p>
-              <span class="read-more">Read the story →</span>
-            </div>
-          </a>
-        ) : (
-          <div class="empty">
-            <p class="empty-icon">🗺️</p>
-            <h3>Our first story is on its way</h3>
-            <p>New journals land every month. Follow along on Instagram in the meantime.</p>
-            <a href={instagramUrl} class="btn btn-primary" target="_blank" rel="noopener">Follow on Instagram</a>
-          </div>
-        )}
-      </section>
-
-      <!-- More journals -->
-      {recent.length > 0 && (
-        <section class="section">
-          <h2 class="section-title">More stories</h2>
-          <div class="grid">
-            {recent.map((j) => (
-              <a href={`/journals/${j.slug}`} class="card">
-                <div class="card-img">
-                  {j.cover
-                    ? <img src={j.cover} alt={j.title} loading="lazy" />
-                    : <div class="img-placeholder">📸</div>}
-                </div>
-                <div class="card-body">
-                  <p class="meta">{j.location}{j.location && j.date && " · "}{formatDate(j.date)}</p>
-                  <h3>{j.title}</h3>
-                  <p>{j.excerpt}</p>
-                </div>
-              </a>
-            ))}
-          </div>
-          <div class="center">
-            <a href="/journals" class="btn btn-ghost">See all journals</a>
-          </div>
-        </section>
-      )}
-
-      <!-- About strip -->
-      <section class="about">
-        <div class="about-inner">
-          <h2>Hello, we're the family behind the miles 👋</h2>
-          <p>
-            We swapped India for the UK and decided to explore our new home one trip at a time,
-            with a little one in tow. This is where we keep our stories, tips and favourite places,
-            so you can plan your own family adventures with a bit more confidence.
-          </p>
-          <a href="/about" class="btn btn-primary">Our story</a>
-        </div>
-      </section>
-
-      <!-- Instagram CTA -->
-      <section class="section cta">
-        <h2>Follow the journey</h2>
-        <p>Day-to-day snaps and stories live on Instagram. A new journal arrives here every month.</p>
-        <div class="hero-actions center">
-          <a href={instagramUrl} class="btn btn-primary" target="_blank" rel="noopener">Instagram</a>
-          <a href={linktreeUrl} class="btn btn-ghost" target="_blank" rel="noopener">All our links</a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <p>© {new Date().getFullYear()} {siteTitle}. Made with love and lots of snacks.</p>
-    </footer>
-  </body>
-</html>
-
-<style is:global>
-  :root {
-    --bg: #fffaf3;
-    --surface: #ffffff;
-    --text: #2d2a26;
-    --muted: #6f675d;
-    --accent: #e0703a;
-    --accent-dark: #c25a28;
-    --soft: #fdeee2;
-    --teal: #2f7d78;
-    --radius: 18px;
-    --shadow: 0 6px 24px rgba(45, 42, 38, 0.08);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: "Nunito", system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-  }
-
-  h1, h2, h3, .logo { font-family: "Fraunces", Georgia, serif; line-height: 1.15; }
-  a { color: inherit; text-decoration: none; }
-  img { display: block; width: 100%; height: 100%; object-fit: cover; }
-</style>
+	<section class="section cta">
+		<h2>Follow the journey</h2>
+		<p>Day-to-day snaps and stories live on Instagram. A new journal arrives here every month.</p>
+		<div class="actions center">
+			<a href={INSTAGRAM_URL} class="btn btn-primary" target="_blank" rel="noopener">Instagram</a>
+			<a href={LINKTREE_URL} class="btn btn-ghost" target="_blank" rel="noopener">All our links</a>
+		</div>
+	</section>
+</SiteLayout>
 
 <style>
-  /* Header */
-  .site-header {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 12px;
-    max-width: 1100px; margin: 0 auto; padding: 20px 16px;
-  }
-  .logo { font-size: 1.35rem; font-weight: 700; }
-  .logo span { color: var(--accent); }
-  nav { display: flex; gap: 20px; font-weight: 600; }
-  nav a:hover { color: var(--accent); }
+	.hero {
+		padding-block: clamp(40px, 8vw, 64px) clamp(32px, 6vw, 48px);
+		max-width: 720px;
+	}
+	.hero h1 {
+		font-size: clamp(2.4rem, 7vw, 4rem);
+		margin-bottom: 20px;
+	}
+	.hero .lede {
+		margin-bottom: 28px;
+	}
 
-  main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+	.center {
+		justify-content: center;
+		margin-top: 32px;
+	}
 
-  /* Hero */
-  .hero { padding: 64px 0 48px; max-width: 720px; }
-  .eyebrow {
-    color: var(--teal); font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.08em; font-size: 0.85rem; margin-bottom: 12px;
-  }
-  .hero h1 { font-size: clamp(2.4rem, 7vw, 4rem); margin-bottom: 20px; }
-  .lede { font-size: 1.15rem; color: var(--muted); margin-bottom: 28px; }
-  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+	.empty {
+		text-align: center;
+		padding: 56px 24px;
+		background: var(--surface);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow);
+	}
+	.empty-icon {
+		font-size: 3rem;
+		margin-bottom: 8px;
+	}
+	.empty h3 {
+		font-size: 1.5rem;
+		margin-bottom: 8px;
+	}
+	.empty p {
+		color: var(--muted);
+		margin-bottom: 20px;
+	}
 
-  /* Buttons */
-  .btn {
-    display: inline-block; padding: 12px 22px; border-radius: 999px;
-    font-weight: 700; transition: transform 0.15s, background 0.15s;
-  }
-  .btn:hover { transform: translateY(-2px); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-dark); }
-  .btn-ghost { border: 2px solid var(--text); }
-  .btn-ghost:hover { background: var(--text); color: var(--bg); }
+	.about {
+		background: var(--soft);
+		border-radius: var(--radius);
+		margin: 24px 0;
+		padding: 56px 24px;
+		text-align: center;
+	}
+	.about > * {
+		max-width: 680px;
+		margin-inline: auto;
+	}
+	.about h2 {
+		font-size: 1.8rem;
+		margin-bottom: 16px;
+	}
+	.about p {
+		color: var(--muted);
+		margin-bottom: 24px;
+	}
 
-  /* Sections */
-  .section { padding: 48px 0; }
-  .section-title { font-size: 1.8rem; margin-bottom: 24px; }
-  .center { text-align: center; margin-top: 32px; justify-content: center; }
-  .meta { font-size: 0.85rem; color: var(--teal); font-weight: 700; margin-bottom: 6px; }
-
-  /* Featured */
-  .featured {
-    display: grid; grid-template-columns: 1.2fr 1fr;
-    background: var(--surface); border-radius: var(--radius);
-    overflow: hidden; box-shadow: var(--shadow);
-    transition: transform 0.2s;
-  }
-  .featured:hover { transform: translateY(-4px); }
-  .featured-img { min-height: 320px; }
-  .featured-body { padding: 32px; display: flex; flex-direction: column; justify-content: center; }
-  .featured-body h3 { font-size: 1.8rem; margin-bottom: 12px; }
-  .featured-body p { color: var(--muted); }
-  .read-more { margin-top: 16px; color: var(--accent); font-weight: 700; }
-
-  /* Grid */
-  .grid {
-    display: grid; gap: 24px;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  }
-  .card {
-    background: var(--surface); border-radius: var(--radius);
-    overflow: hidden; box-shadow: var(--shadow); transition: transform 0.2s;
-  }
-  .card:hover { transform: translateY(-4px); }
-  .card-img { height: 200px; }
-  .card-body { padding: 20px; }
-  .card-body h3 { font-size: 1.25rem; margin-bottom: 8px; }
-  .card-body p { color: var(--muted); font-size: 0.95rem; }
-
-  .img-placeholder {
-    width: 100%; height: 100%; min-height: inherit;
-    display: grid; place-items: center; font-size: 3rem; background: var(--soft);
-  }
-
-  /* Empty state */
-  .empty {
-    text-align: center; padding: 56px 24px;
-    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
-  }
-  .empty-icon { font-size: 3rem; margin-bottom: 8px; }
-  .empty h3 { font-size: 1.5rem; margin-bottom: 8px; }
-  .empty p { color: var(--muted); margin-bottom: 20px; }
-
-  /* About */
-  .about { background: var(--soft); border-radius: var(--radius); margin: 24px 0; }
-  .about-inner { max-width: 680px; margin: 0 auto; padding: 56px 24px; text-align: center; }
-  .about h2 { font-size: 1.8rem; margin-bottom: 16px; }
-  .about p { color: var(--muted); margin-bottom: 24px; }
-
-  /* CTA */
-  .cta { text-align: center; }
-  .cta h2 { font-size: 1.8rem; margin-bottom: 8px; }
-  .cta p { color: var(--muted); }
-
-  /* Footer */
-  .site-footer {
-    text-align: center; padding: 32px 16px; color: var(--muted);
-    font-size: 0.9rem; border-top: 1px solid #eee3d6; margin-top: 48px;
-  }
-
-  @media (max-width: 720px) {
-    .featured { grid-template-columns: 1fr; }
-    .featured-img { min-height: 220px; }
-    .featured-body { padding: 24px; }
-    .hero { padding: 40px 0 32px; }
-  }
+	.cta {
+		text-align: center;
+	}
+	.cta h2 {
+		font-size: 1.8rem;
+		margin-bottom: 8px;
+	}
+	.cta p {
+		color: var(--muted);
+	}
 </style>
