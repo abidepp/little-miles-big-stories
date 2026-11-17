@@ -1,0 +1,31 @@
+---
+// Shown for any URL that doesn't exist (Cloudflare serves dist/404.html).
+import SiteLayout from '../layouts/SiteLayout.astro';
+---
+
+<SiteLayout title="Page not found">
+	<section class="wrap-text lost">
+		<p class="label">404</p>
+		<h1>This path doesn't lead anywhere</h1>
+		<p class="lede">Even the best-planned trips take a wrong turn. Let's get you back on track.</p>
+		<div class="actions">
+			<a href="/" class="btn btn-primary">Home</a>
+			<a href="/journals" class="btn">Our journals</a>
+		</div>
+	</section>
+</SiteLayout>
+
+<style>
+	.lost {
+		text-align: center;
+		padding-block: clamp(64px, 12vw, 140px) 0;
+	}
+	h1 {
+		font-size: clamp(2.4rem, 6vw, 3.6rem);
+		margin-block: 10px 14px;
+	}
+	.actions {
+		justify-content: center;
+		margin-top: 28px;
+	}
+</style>

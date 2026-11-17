@@ -1,151 +1,156 @@
 ---
-// One clickable journal card. Used on the homepage and on /journals.
-//
-// HOW PROPS WORK
-// The parent passes data in like HTML attributes:
-//   <JournalCard journal={entry} featured />
-// and it arrives here in Astro.props. The `Props` interface tells TypeScript
-// (and your editor) exactly what a parent is allowed to pass.
+// One article card: photo first, then place, title and excerpt.
+// Used on the homepage, the three category pages and destination pages.
+//   <JournalCard journal={entry} />                 normal card
+//   <JournalCard journal={entry} variant="tall" />   portrait photo (featured)
+//   <JournalCard journal={entry} variant="wide" />   photo beside text
 
 import { Image } from 'astro:assets';
-import { formatDate, type Journal } from '../utils/journals';
+import { CATEGORIES } from '../consts';
+import { formatDate, placeLabel, type Journal } from '../utils/journals';
 
 interface Props {
 	journal: Journal;
-	featured?: boolean; // larger, side-by-side layout for the latest journal
-	headingLevel?: 2 | 3; // keeps heading order correct on whichever page uses it
+	variant?: 'default' | 'tall' | 'wide';
+	headingLevel?: 2 | 3;
+	showCategory?: boolean;
 }
 
-const { journal, featured = false, headingLevel = 3 } = Astro.props;
-const { title, date, location, excerpt, cover, coverAlt } = journal.data;
-
-// A capitalised variable can be used as a tag name: <Heading> renders as <h2> or <h3>.
+const { journal, variant = 'default', headingLevel = 3, showCategory = false } = Astro.props;
+const { title, date, excerpt, cover, coverAlt, category } = journal.data;
+const place = placeLabel(journal.data);
 const Heading = `h${headingLevel}`;
 ---
 
-<a href={`/journals/${journal.id}`} class:list={['card', { featured }]}>
-	<!-- The same transition:name is used on the journal page's cover, so with
-	     <ClientRouter /> the photo animates from this card into the article. -->
-	<div class="card-img" transition:name={`cover-${journal.id}`}>
-		{
-			cover ? (
-				// <Image /> runs at build time: it resizes the photo to these widths,
-				// converts to WebP, and writes srcset/sizes so phones download small files.
-				<Image
-					src={cover}
-					alt={coverAlt ?? ''}
-					widths={featured ? [640, 960, 1280] : [400, 800]}
-					sizes={featured ? '(max-width: 720px) 100vw, 600px' : '(max-width: 720px) 100vw, 350px'}
-					loading={featured ? 'eager' : 'lazy'}
-				/>
-			) : (
-				<div class="img-placeholder" aria-hidden="true">📸</div>
-			)
-		}
-		{location && <span class="badge">📍 {location}</span>}
-	</div>
-
-	<div class="card-body">
-		<p class="meta"><time datetime={date.toISOString()}>{formatDate(date, 'month')}</time></p>
-		<Heading class="card-title">{title}</Heading>
-		{excerpt && <p class="excerpt">{excerpt}</p>}
-		<span class="read-more" aria-hidden="true">Read the story →</span>
-	</div>
-</a>
+<article class:list={['card', variant]}>
+	<a href={`/journals/${journal.id}`} class="card-link">
+		<div class="card-img">
+			{
+				cover ? (
+					<Image
+						src={cover}
+						alt={coverAlt ?? ''}
+						widths={variant === 'default' ? [400, 700] : [500, 800, 1100]}
+						sizes={variant === 'wide' ? '(max-width: 760px) 100vw, 600px' : '(max-width: 760px) 100vw, 400px'}
+						loading="lazy"
+					/>
+				) : (
+					<div class="no-photo" aria-hidden="true">
+						<span>{place || title}</span>
+					</div>
+				)
+			}
+		</div>
+		<div class="card-body">
+			<p class="label card-meta">
+				{showCategory && <span>{CATEGORIES[category].singular}</span>}
+				{showCategory && place && <span aria-hidden="true"> · </span>}
+				{place && <span>{place}</span>}
+			</p>
+			<Heading class="card-title">{title}</Heading>
+			{excerpt && <p class="excerpt">{excerpt}</p>}
+			<p class="date"><time datetime={date.toISOString()}>{formatDate(date, 'month')}</time></p>
+		</div>
+	</a>
+</article>
 
 <style>
-	.card {
+	.card-link {
 		display: flex;
 		flex-direction: column;
-		background: var(--surface);
-		border-radius: var(--radius);
-		overflow: hidden;
-		box-shadow: var(--shadow);
-		transition: transform 0.2s, box-shadow 0.2s;
-	}
-	.card:hover {
-		transform: translateY(-5px);
-		box-shadow: var(--shadow-hover);
+		height: 100%;
 	}
 
 	.card-img {
 		position: relative;
-		height: 210px;
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+		background: var(--sand);
+		border-radius: var(--radius);
 	}
 	.card-img img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		transition: transform 0.6s ease;
 	}
-
-	.badge {
-		position: absolute;
-		left: 12px;
-		bottom: 12px;
-		background: var(--surface);
-		color: var(--text);
-		padding: 4px 12px;
-		border-radius: 999px;
-		font-size: 0.8rem;
-		font-weight: 700;
+	.card-link:hover .card-img img {
+		transform: scale(1.03);
+	}
+	.no-photo {
+		height: 100%;
+		display: grid;
+		place-items: center;
+		padding: 16px;
+		text-align: center;
+		font-family: var(--font-heading);
+		font-style: italic;
+		font-size: 1.5rem;
+		color: var(--muted);
 	}
 
 	.card-body {
-		padding: 20px 22px 24px;
-		display: flex;
-		flex-direction: column;
-		flex: 1;
+		padding-top: 18px;
+	}
+	.card-meta {
+		margin-bottom: 8px;
 	}
 	.card-title {
-		font-size: 1.3rem;
+		font-size: 1.6rem;
 		margin-bottom: 8px;
+	}
+	.card-link:hover .card-title {
+		color: var(--accent);
 	}
 	.excerpt {
 		color: var(--muted);
-		font-size: 0.95rem;
-		flex: 1;
+		font-size: 0.98rem;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
-	.read-more {
-		margin-top: 14px;
-		color: var(--accent);
-		font-weight: 700;
+	.date {
+		margin-top: 10px;
+		font-size: 0.85rem;
+		color: var(--muted);
 	}
 
-	/* Featured variant */
-	.featured {
+	/* Tall: Pinterest-style portrait photo */
+	.tall .card-img {
+		aspect-ratio: 4 / 5;
+	}
+	.tall .card-title {
+		font-size: 1.9rem;
+	}
+
+	/* Wide: photo beside the text */
+	.wide .card-link {
 		display: grid;
-		grid-template-columns: 1.2fr 1fr;
+		grid-template-columns: 1.15fr 1fr;
+		gap: clamp(24px, 4vw, 56px);
+		align-items: center;
 	}
-	.featured .card-img {
-		height: auto;
-		min-height: 320px;
+	.wide .card-img {
+		aspect-ratio: 5 / 4;
 	}
-	/* The grid row sets the height here, so pin the image to fill it. */
-	.featured .card-img img {
-		position: absolute;
-		inset: 0;
+	.wide .card-body {
+		padding-top: 0;
 	}
-	.featured .card-body {
-		padding: 32px;
-		justify-content: center;
+	.wide .card-title {
+		font-size: clamp(2rem, 4vw, 2.8rem);
 	}
-	.featured .card-title {
-		font-size: 1.8rem;
-		margin-bottom: 12px;
+	.wide .excerpt {
+		font-size: 1.1rem;
 	}
-
-	@media (max-width: 720px) {
-		.card-img {
-			height: 190px;
-		}
-		.featured {
+	@media (max-width: 760px) {
+		.wide .card-link {
 			grid-template-columns: 1fr;
+			gap: 0;
 		}
-		.featured .card-img {
-			min-height: 220px;
-		}
-		.featured .card-body {
-			padding: 24px;
+		.wide .card-body {
+			padding-top: 18px;
 		}
 	}
 </style>

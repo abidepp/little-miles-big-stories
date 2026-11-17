@@ -1,63 +1,41 @@
-# Astro Starter Kit: Blog
+# Little Miles, Big Stories
 
-```sh
-npm create astro@latest -- --template blog
-```
+A family travel journal and practical travel resource, built with [Astro](https://docs.astro.build) and deployed as a static site on Cloudflare Workers.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+**Publishing articles:** see [PUBLISHING.md](PUBLISHING.md). Articles are written in the editor at `/admin` (Sveltia CMS); no code needed.
 
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## How it fits together
 
 ```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+src/content/journals/<slug>/index.md   one folder per article (+ its photos)
+src/content/pages/{home,about,contact} editable page text, photos, social links
+src/content.config.ts                  schema: the fields every article may have
+public/admin/config.yml                the editor's form (must match the schema)
+src/utils/journals.ts                  getJournals(), getDestinations(), …
+src/pages/                             one file per route; [slug] = one page per article
+src/layouts/SiteLayout.astro           shared <head>, header, footer
+src/components/                        JournalCard, ShareButtons, CategoryListing, …
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Publishing in the editor → commit to `main` (via a draft PR) → Cloudflare runs `npm run build` → new HTML is live.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Routes
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+| URL | What |
+|---|---|
+| `/` | Homepage |
+| `/journals`, `/destination-guides`, `/family-travel` | Article lists by `category` |
+| `/journals/<slug>` | Every article (any category) |
+| `/destinations`, `/destinations/<country>` | Generated from each article's `country` |
+| `/about`, `/contact` | From `src/content/pages` |
+| `/rss.xml`, `/sitemap-index.xml` | Feeds |
+| `/admin` | The editor |
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Commands
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+| Command | Action |
+|---|---|
+| `npm install` | Install dependencies |
+| `npm run dev` | Dev server at `localhost:4321` (editor at `/admin/index.html`) |
+| `npm run build` | Build to `./dist/` |
+| `npm run preview` | Preview the build |

@@ -1,0 +1,73 @@
+---
+// The whole page body for Our Journals / Destination Guides / Family Travel.
+// Each of those pages is one line: <CategoryListing category="guide" />.
+// A new article appears here automatically once its `category` matches.
+
+import JournalCard from './JournalCard.astro';
+import { CATEGORIES, type Category } from '../consts';
+import { getJournals } from '../utils/journals';
+
+interface Props {
+	category: Category;
+}
+
+const { category } = Astro.props;
+const info = CATEGORIES[category];
+const [latest, ...rest] = await getJournals(category);
+---
+
+<header class="wrap page-intro">
+	<p class="label">Little Miles, Big Stories</p>
+	<h1>{info.label}</h1>
+	<p class="lede">{info.intro}</p>
+</header>
+
+<div class="wrap">
+	{
+		latest ? (
+			<>
+				<JournalCard journal={latest} variant="wide" headingLevel={2} />
+				{rest.length > 0 && (
+					<div class="grid more">
+						{rest.map((journal) => (
+							<JournalCard journal={journal} headingLevel={2} />
+						))}
+					</div>
+				)}
+			</>
+		) : (
+			<div class="empty">
+				<h2>Coming soon</h2>
+				<p>We're still writing these up. In the meantime, have a look at our other journals.</p>
+				<p class="actions" style="justify-content:center;margin-top:20px">
+					<a href="/" class="btn">Back to home</a>
+				</p>
+			</div>
+		)
+	}
+</div>
+
+<style>
+	.page-intro {
+		text-align: center;
+		padding-block: clamp(40px, 7vw, 80px) clamp(32px, 5vw, 56px);
+	}
+	.page-intro h1 {
+		font-size: clamp(2.6rem, 7vw, 4.2rem);
+		margin-block: 10px 14px;
+	}
+	.page-intro .lede {
+		max-width: 56ch;
+		margin-inline: auto;
+	}
+	.more {
+		margin-top: clamp(48px, 7vw, 80px);
+		padding-top: clamp(40px, 6vw, 64px);
+		border-top: 1px solid var(--line);
+	}
+	.empty h2 {
+		font-size: 1.8rem;
+		color: var(--ink);
+		margin-bottom: 8px;
+	}
+</style>

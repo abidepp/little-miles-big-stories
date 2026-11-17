@@ -1,0 +1,53 @@
+---
+// "/destinations": one tile per country. A new country appears automatically
+// the first time an article uses it.
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import DestinationTile from '../../components/DestinationTile.astro';
+import { getDestinations } from '../../utils/journals';
+
+const destinations = await getDestinations();
+---
+
+<SiteLayout title="Destinations" description="Every place we've explored as a family, by country.">
+	<header class="wrap page-intro">
+		<p class="label">Explore</p>
+		<h1>Destinations</h1>
+		<p class="lede">Every place we've explored with our little one, from weekend escapes to adventures further afield.</p>
+	</header>
+
+	<div class="wrap">
+		{
+			destinations.length > 0 ? (
+				<div class="tiles">
+					{destinations.map((destination) => (
+						<DestinationTile destination={destination} />
+					))}
+				</div>
+			) : (
+				<div class="empty">
+					<h2>Our first destination is on its way</h2>
+				</div>
+			)
+		}
+	</div>
+</SiteLayout>
+
+<style>
+	.page-intro {
+		text-align: center;
+		padding-block: clamp(40px, 7vw, 80px) clamp(32px, 5vw, 56px);
+	}
+	.page-intro h1 {
+		font-size: clamp(2.6rem, 7vw, 4.2rem);
+		margin-block: 10px 14px;
+	}
+	.page-intro .lede {
+		max-width: 52ch;
+		margin-inline: auto;
+	}
+	.tiles {
+		display: grid;
+		gap: clamp(12px, 2vw, 24px);
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+	}
+</style>

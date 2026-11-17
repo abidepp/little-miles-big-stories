@@ -1,0 +1,10 @@
+---
+// "/destination-guides": every article whose category is "guide".
+import SiteLayout from '../layouts/SiteLayout.astro';
+import CategoryListing from '../components/CategoryListing.astro';
+import { CATEGORIES } from '../consts';
+---
+
+<SiteLayout title={CATEGORIES.guide.label} description={CATEGORIES.guide.intro}>
+	<CategoryListing category="guide" />
+</SiteLayout>

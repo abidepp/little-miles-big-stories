@@ -1,0 +1,50 @@
+---
+// "/destinations/<country>": every article for one country, e.g. /destinations/turkey.
+// Same pattern as journals/[slug].astro: getStaticPaths() lists the pages to build.
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import JournalCard from '../../components/JournalCard.astro';
+import { getDestinations, type Destination } from '../../utils/journals';
+
+export async function getStaticPaths() {
+	const destinations = await getDestinations();
+	return destinations.map((destination) => ({
+		params: { country: destination.slug },
+		props: { destination },
+	}));
+}
+
+interface Props {
+	destination: Destination;
+}
+const { destination } = Astro.props;
+const count = destination.journals.length;
+---
+
+<SiteLayout
+	title={`${destination.country}: family travel journals & guides`}
+	description={`Our family travel journals and practical guides for ${destination.country}.`}
+>
+	<header class="wrap page-intro">
+		<p class="label"><a href="/destinations">Destinations</a></p>
+		<h1>{destination.country}</h1>
+		<p class="lede">{count} {count === 1 ? 'story' : 'stories'} from our family travels in {destination.country}.</p>
+	</header>
+
+	<div class="wrap grid grid-3">
+		{destination.journals.map((journal) => <JournalCard journal={journal} headingLevel={2} showCategory />)}
+	</div>
+</SiteLayout>
+
+<style>
+	.page-intro {
+		text-align: center;
+		padding-block: clamp(40px, 7vw, 80px) clamp(32px, 5vw, 56px);
+	}
+	.page-intro .label a:hover {
+		color: var(--accent);
+	}
+	.page-intro h1 {
+		font-size: clamp(2.6rem, 7vw, 4.2rem);
+		margin-block: 10px 14px;
+	}
+</style>

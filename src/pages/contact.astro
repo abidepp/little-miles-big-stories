@@ -1,0 +1,114 @@
+---
+// "/contact". Text, email and social links come from src/content/pages/contact/index.md
+// (editor: Site pages → Contact & social links). The same links are used in the footer.
+//
+// This is a static site with no server, so there's no contact form; email and
+// Instagram DMs need nothing extra to keep working.
+import { render } from 'astro:content';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import Icon from '../components/Icon.astro';
+import { getPage, getSocial } from '../utils/journals';
+
+const contact = await getPage('contact');
+const social = await getSocial();
+const { Content } = await render(contact);
+---
+
+<SiteLayout title="Contact" description={contact.data.intro}>
+	<section class="wrap-text contact">
+		<p class="label">Contact</p>
+		<h1>{contact.data.title ?? 'Say hello'}</h1>
+		{contact.data.intro && <p class="lede">{contact.data.intro}</p>}
+
+		<ul class="channels">
+			<li>
+				<a href={social.instagram} target="_blank" rel="noopener">
+					<Icon name="instagram" size={28} />
+					<span><strong>Instagram</strong><span>Send us a message</span></span>
+				</a>
+			</li>
+			{
+				social.email && (
+					<li>
+						<a href={`mailto:${social.email}`}>
+							<Icon name="mail" size={28} />
+							<span>
+								<strong>Email</strong>
+								<span>{social.email}</span>
+							</span>
+						</a>
+					</li>
+				)
+			}
+			{
+				social.linktree && (
+					<li>
+						<a href={social.linktree} target="_blank" rel="noopener">
+							<Icon name="link" size={28} />
+							<span>
+								<strong>All our links</strong>
+								<span>Linktree</span>
+							</span>
+						</a>
+					</li>
+				)
+			}
+		</ul>
+
+		<div class="body">
+			<Content />
+		</div>
+	</section>
+</SiteLayout>
+
+<style>
+	.contact {
+		text-align: center;
+		padding-block: clamp(40px, 7vw, 80px) 0;
+	}
+	h1 {
+		font-size: clamp(2.6rem, 7vw, 4.2rem);
+		margin-block: 10px 14px;
+	}
+	.channels {
+		list-style: none;
+		display: grid;
+		gap: 12px;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		margin-block: 40px;
+	}
+	.channels a {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		padding: 28px 16px;
+		background: var(--surface);
+		border: 1px solid var(--line);
+		height: 100%;
+	}
+	.channels a:hover {
+		border-color: var(--ink);
+	}
+	.channels a > span {
+		display: grid;
+		gap: 2px;
+	}
+	.channels strong {
+		font-family: var(--font-heading);
+		font-size: 1.4rem;
+		font-weight: 500;
+	}
+	.channels a > span > span {
+		color: var(--muted);
+		font-size: 0.9rem;
+		overflow-wrap: anywhere;
+	}
+	.body {
+		text-align: left;
+		color: var(--muted);
+	}
+	.body :global(p + p) {
+		margin-top: 1em;
+	}
+</style>

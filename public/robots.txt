@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin/
+
+# TODO: update to https://littlemilesbigstories.com when the domain is connected
+Sitemap: https://little-miles-big-stories.abinavdepp.workers.dev/sitemap-index.xml

@@ -1,52 +1,38 @@
 /*
   Global styles, imported once by src/layouts/SiteLayout.astro.
+  Component <style> tags are scoped to that component; this file is for site-wide rules.
 
-  Rules here apply to every page. Styles inside a component's own <style> tag
-  are "scoped": Astro adds a unique attribute to that component's elements so
-  its CSS can't leak out. Use this file for things that genuinely are site-wide.
+  Design direction: a printed family travel journal. Warm paper, earthy neutrals,
+  big photographs, generous white space, very little motion.
 */
 
 /* ---------- Design tokens ---------- */
 :root {
-	color-scheme: light dark;
+	color-scheme: light;
 
-	--bg: #fffaf3;
-	--surface: #ffffff;
-	--text: #2d2a26;
-	--muted: #6f675d;
-	--accent: #e0703a;
-	--accent-dark: #c25a28;
-	--on-accent: #ffffff;
-	--soft: #fdeee2;
-	--teal: #2f7d78;
-	--border: #eee3d6;
-	--radius: 18px;
-	--shadow: 0 6px 24px rgba(45, 42, 38, 0.08);
-	--shadow-hover: 0 12px 32px rgba(45, 42, 38, 0.14);
+	--paper: #f7f3ee; /* page background */
+	--surface: #fffdf9; /* cards, boxes */
+	--sand: #e8ded2; /* soft panels, dividers */
+	--sand-soft: #f0e8de;
+	--taupe: #a89584;
+	--ink: #3b3632; /* body text */
+	--muted: #6e645b; /* secondary text (AA contrast on paper) */
+	--accent: #a65e40; /* terracotta: links, buttons */
+	--accent-dark: #8a4b31;
+	--on-accent: #fffdf9;
+	--sage: #6f7d68; /* small labels */
+	--line: #ddd2c4;
 
-	/* Font variables are created by the Fonts API (astro.config.mjs) and
-	   injected by <Font /> in the layout. The fallbacks below are used until they load. */
-	--font-body: var(--font-nunito), system-ui, sans-serif;
-	--font-heading: var(--font-fraunces), Georgia, serif;
-}
+	--radius: 4px; /* editorial: barely rounded */
+	--radius-lg: 10px;
 
-/* Dark mode: only the token values change. Every rule that uses var(--bg) etc.
-   picks up the new colours automatically. That's the payoff of using variables. */
-@media (prefers-color-scheme: dark) {
-	:root {
-		--bg: #1c1916;
-		--surface: #27231f;
-		--text: #f3ece3;
-		--muted: #b9ad9f;
-		--accent: #f08a55;
-		--accent-dark: #f5a57c;
-		--on-accent: #1c1916;
-		--soft: #33291f;
-		--teal: #6cc2bb;
-		--border: #3a332b;
-		--shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-		--shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.5);
-	}
+	--font-heading: var(--font-cormorant), Georgia, serif;
+	--font-body: var(--font-nunito-sans), system-ui, sans-serif;
+	--font-script: var(--font-caveat), cursive;
+
+	--wide: 1180px;
+	--text: 700px;
+	--gutter: clamp(16px, 4vw, 40px);
 }
 
 /* ---------- Reset & base ---------- */
@@ -58,19 +44,32 @@
 	padding: 0;
 }
 
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
 body {
 	font-family: var(--font-body);
-	background: var(--bg);
-	color: var(--text);
-	line-height: 1.6;
+	font-size: 1.0625rem;
+	background: var(--paper);
+	color: var(--ink);
+	line-height: 1.7;
+	-webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
 h3,
-.logo {
+h4 {
 	font-family: var(--font-heading);
-	line-height: 1.15;
+	font-weight: 500;
+	line-height: 1.12;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+}
+
+p {
+	text-wrap: pretty;
 }
 
 a {
@@ -78,39 +77,44 @@ a {
 	text-decoration: none;
 }
 
-img {
+img,
+iframe {
 	display: block;
 	max-width: 100%;
+}
+img {
 	height: auto;
 }
 
 /* ---------- Accessibility ---------- */
-
-/* Keyboard users need to see where they are. :focus-visible only shows for
-   keyboard navigation, not mouse clicks. */
 :focus-visible {
-	outline: 3px solid var(--accent);
+	outline: 2px solid var(--accent);
 	outline-offset: 3px;
-	border-radius: 4px;
 }
 
-/* Hidden until a keyboard user tabs to it; lets them jump past the nav. */
 .skip-link {
 	position: absolute;
 	left: 16px;
 	top: -100px;
 	z-index: 10;
-	background: var(--accent);
-	color: var(--on-accent);
+	background: var(--ink);
+	color: var(--paper);
 	padding: 10px 16px;
-	border-radius: 8px;
 	font-weight: 700;
 }
 .skip-link:focus {
 	top: 16px;
 }
 
-/* Respect "reduce motion" in the visitor's OS settings. */
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
@@ -121,30 +125,100 @@ img {
 	}
 }
 
-/* ---------- Shared building blocks ---------- */
-.btn {
-	display: inline-block;
-	padding: 12px 22px;
-	border-radius: 999px;
+/* ---------- Layout helpers ---------- */
+.wrap {
+	width: 100%;
+	max-width: calc(var(--wide) + 2 * var(--gutter));
+	margin-inline: auto;
+	padding-inline: var(--gutter);
+}
+.wrap-text {
+	width: 100%;
+	max-width: calc(var(--text) + 2 * var(--gutter));
+	margin-inline: auto;
+	padding-inline: var(--gutter);
+}
+
+.section {
+	padding-block: clamp(48px, 8vw, 96px);
+}
+.section + .section {
+	padding-top: 0;
+}
+
+/* ---------- Type helpers ---------- */
+.label {
+	font-family: var(--font-body);
+	font-size: 0.75rem;
 	font-weight: 700;
-	transition: transform 0.15s, background 0.15s, color 0.15s;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--sage);
+}
+
+.script {
+	font-family: var(--font-script);
+	font-weight: 500;
+	color: var(--accent);
+}
+
+.lede {
+	font-size: 1.15rem;
+	color: var(--muted);
+}
+
+/* Section heading: small label above a large serif title */
+.section-head {
+	display: flex;
+	align-items: end;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-bottom: clamp(24px, 4vw, 40px);
+}
+.section-head h2 {
+	font-size: clamp(2rem, 4.5vw, 2.8rem);
+	margin-top: 6px;
+}
+
+.text-link {
+	font-weight: 700;
+	font-size: 0.9rem;
+	letter-spacing: 0.04em;
+	color: var(--accent);
+	border-bottom: 1px solid currentColor;
+	padding-bottom: 2px;
+}
+.text-link:hover {
+	color: var(--accent-dark);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 13px 26px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	border: 1px solid var(--ink);
+	transition: background 0.2s, color 0.2s;
 }
 .btn:hover {
-	transform: translateY(-2px);
+	background: var(--ink);
+	color: var(--paper);
 }
 .btn-primary {
 	background: var(--accent);
+	border-color: var(--accent);
 	color: var(--on-accent);
 }
 .btn-primary:hover {
 	background: var(--accent-dark);
-}
-.btn-ghost {
-	border: 2px solid var(--text);
-}
-.btn-ghost:hover {
-	background: var(--text);
-	color: var(--bg);
+	border-color: var(--accent-dark);
+	color: var(--on-accent);
 }
 
 .actions {
@@ -153,46 +227,24 @@ img {
 	flex-wrap: wrap;
 }
 
-.eyebrow {
-	color: var(--teal);
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	font-size: 0.85rem;
-	margin-bottom: 12px;
-}
-
-.lede {
-	font-size: 1.15rem;
-	color: var(--muted);
-}
-
-.meta {
-	font-size: 0.85rem;
-	color: var(--teal);
-	font-weight: 700;
-	margin-bottom: 6px;
-}
-
-.section {
-	padding-block: clamp(32px, 6vw, 56px);
-}
-.section-title {
-	font-size: 1.8rem;
-	margin-bottom: 24px;
-}
-
+/* ---------- Grids ---------- */
 .grid {
 	display: grid;
-	gap: 28px;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: clamp(28px, 4vw, 40px) clamp(20px, 3vw, 32px);
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+}
+.grid-3 {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 }
 
-.img-placeholder {
-	width: 100%;
-	height: 100%;
-	display: grid;
-	place-items: center;
-	font-size: 3rem;
-	background: var(--soft);
+.empty {
+	text-align: center;
+	padding: 48px 24px;
+	border: 1px dashed var(--line);
+	color: var(--muted);
+}
+.empty h3 {
+	font-size: 1.6rem;
+	color: var(--ink);
+	margin-bottom: 8px;
 }

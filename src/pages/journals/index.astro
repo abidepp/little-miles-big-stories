@@ -1,75 +1,10 @@
 ---
-// src/pages/journals/index.astro  ->  "/journals"
-// Lists every journal as a card, newest first.
-
+// "/journals": every article whose category is "journal".
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import JournalCard from '../../components/JournalCard.astro';
-import { getJournals } from '../../utils/journals';
-import { INSTAGRAM_URL } from '../../consts';
-
-const journals = await getJournals();
+import CategoryListing from '../../components/CategoryListing.astro';
+import { CATEGORIES } from '../../consts';
 ---
 
-<SiteLayout title="Journals" description="All our family travel journals, newest first.">
-	<section class="page-intro">
-		<p class="eyebrow">Our travel journals</p>
-		<h1>Every little mile, written down</h1>
-		<p class="lede">
-			Stories, tips and favourite spots from our family trips.
-			{journals.length > 0 && <span>{journals.length} {journals.length === 1 ? 'journal' : 'journals'} so far.</span>}
-		</p>
-	</section>
-
-	{
-		journals.length > 0 ? (
-			<section class="grid">
-				{journals.map((journal) => (
-					<JournalCard journal={journal} headingLevel={2} />
-				))}
-			</section>
-		) : (
-			<section class="empty">
-				<p class="empty-icon" aria-hidden="true">🗺️</p>
-				<h2>Our first journal is on its way</h2>
-				<p>New journals land every month. Follow along on Instagram in the meantime.</p>
-				<a href={INSTAGRAM_URL} class="btn btn-primary" target="_blank" rel="noopener">Follow on Instagram</a>
-			</section>
-		)
-	}
+<SiteLayout title={CATEGORIES.journal.label} description={CATEGORIES.journal.intro}>
+	<CategoryListing category="journal" />
 </SiteLayout>
-
-<style>
-	.page-intro {
-		padding-block: clamp(32px, 6vw, 48px) clamp(24px, 4vw, 36px);
-		max-width: 680px;
-	}
-	.page-intro h1 {
-		font-size: clamp(2rem, 6vw, 3.2rem);
-		margin-bottom: 14px;
-	}
-
-	.grid {
-		padding-bottom: 32px;
-	}
-
-	.empty {
-		text-align: center;
-		padding: 56px 24px;
-		margin-bottom: 32px;
-		background: var(--surface);
-		border-radius: var(--radius);
-		box-shadow: var(--shadow);
-	}
-	.empty-icon {
-		font-size: 3rem;
-		margin-bottom: 8px;
-	}
-	.empty h2 {
-		font-size: 1.5rem;
-		margin-bottom: 8px;
-	}
-	.empty p {
-		color: var(--muted);
-		margin-bottom: 20px;
-	}
-</style>

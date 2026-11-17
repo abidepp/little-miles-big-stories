@@ -1,0 +1,304 @@
+# Editor configuration (Sveltia CMS) for Little Miles, Big Stories.
+#
+# This decides what the editor at /admin looks like: which sections exist and which
+# fields each article has. The fields must match src/content.config.ts (the website's
+# schema); if you add a field here, add it there too, or the build will reject it.
+# Docs: https://sveltiacms.app/en/docs
+
+backend:
+  name: github
+  repo: abidepp/little-miles-big-stories
+  branch: main
+  # One-time setup (see PUBLISHING.md, "One-time setup"): after deploying the
+  # sveltia-cms-auth Worker, uncomment this line and paste its URL so the family
+  # can use "Sign in with GitHub". Until then, "Sign in with token" works.
+  # base_url: https://sveltia-cms-auth.YOUR-SUBDOMAIN.workers.dev
+
+# Drafts: new articles and edits are saved as drafts first and only go live when you
+# click "Publish". (Under the hood each draft is a GitHub pull request.)
+publish_mode: editorial_workflow
+
+# TODO: change to https://littlemilesbigstories.com once the domain is connected
+site_url: https://little-miles-big-stories.abinavdepp.workers.dev
+display_url: https://little-miles-big-stories.abinavdepp.workers.dev
+
+# Fallback upload folder (each section below sets its own)
+media_folder: public/uploads
+public_folder: /uploads
+
+output:
+  # Leave empty optional fields out of the file, so the website's schema accepts them
+  omit_empty_optional_fields: true
+
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  # ------------------------------------------------------------------
+  # Articles: journals, destination guides and family travel tips
+  # ------------------------------------------------------------------
+  - name: journals
+    label: Journals & Guides
+    label_singular: Article
+    description: >-
+      Every article gets its own page at /journals/<name>. It appears automatically
+      on the homepage, its section page, and its country's destination page.
+    folder: src/content/journals
+    # Each article is a folder: <slug>/index.md, with its photos saved alongside
+    path: '{{slug}}/index'
+    media_folder: ''
+    public_folder: ''
+    create: true
+    delete: true
+    format: frontmatter
+    extension: md
+    identifier_field: title
+    summary: '{{title}} · {{country}}'
+    sortable_fields: [date, title, country, category]
+    view_filters:
+      - { label: 'Our Journals', field: category, pattern: journal }
+      - { label: 'Destination Guides', field: category, pattern: guide }
+      - { label: 'Family Travel', field: category, pattern: family-travel }
+    view_groups:
+      - { label: 'Country', field: country }
+    preview_path: 'journals/{{slug}}'
+    fields:
+      # --- The basics ---
+      - name: title
+        label: Title
+        widget: string
+        hint: 'e.g. "Cappadocia, Turkey – Our Family Travel Experience & Complete Guide"'
+      - name: excerpt
+        label: Short summary
+        widget: text
+        required: false
+        hint: One or two sentences. Shown on cards and when the link is shared on WhatsApp, Facebook or Pinterest.
+      - name: date
+        label: Publish date
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        default: '{{now}}'
+      - name: category
+        label: Section
+        widget: select
+        default: journal
+        options:
+          - { label: 'Our Journals', value: journal }
+          - { label: 'Destination Guides', value: guide }
+          - { label: 'Family Travel (tips & advice)', value: family-travel }
+      - name: featured
+        label: Feature on the homepage
+        widget: boolean
+        default: false
+        hint: The homepage shows up to 3 featured articles.
+
+      # --- Where ---
+      - name: destination
+        label: Destination
+        widget: string
+        required: false
+        hint: 'The place, e.g. "Cappadocia" or "Lake District"'
+      - name: country
+        label: Country
+        widget: string
+        required: false
+        hint: 'e.g. "Turkey" or "United Kingdom". Spell it the same way every time; it creates the country page.'
+
+      # --- Photos ---
+      - name: cover
+        label: Cover photo
+        widget: image
+        required: false
+        hint: A large landscape photo works best. It's also the preview image when the link is shared.
+      - name: coverAlt
+        label: Cover photo description
+        widget: string
+        required: false
+        hint: 'Describe the photo for people who can''t see it, e.g. "The three of us watching hot air balloons at sunrise".'
+
+      # --- Trip at a glance (all optional; only filled-in ones are shown) ---
+      - name: travelDates
+        label: When we went
+        widget: string
+        required: false
+        hint: 'e.g. "April 2026"'
+      - name: tripLength
+        label: Trip length
+        widget: string
+        required: false
+        hint: 'e.g. "5 days, 4 nights"'
+      - name: travelledWith
+        label: Travelled with
+        widget: string
+        required: false
+        hint: 'e.g. "Two adults and a 2-year-old"'
+      - name: bestFor
+        label: Best for
+        widget: string
+        required: false
+        hint: 'e.g. "Toddlers, slow travellers, nature lovers"'
+      - name: budget
+        label: Total budget
+        widget: string
+        required: false
+        hint: 'e.g. "£1,450 for 3"'
+      - name: budgetBreakdown
+        label: Budget breakdown
+        label_singular: Expense
+        widget: list
+        required: false
+        summary: '{{fields.item}}: {{fields.cost}}'
+        fields:
+          - { name: item, label: What, widget: string, hint: 'e.g. "Flights (return, 3 people)"' }
+          - { name: cost, label: Cost, widget: string, hint: 'e.g. "£620"' }
+
+      # --- The article ---
+      - name: body
+        label: Article
+        widget: markdown
+        hint: >-
+          Use "Heading 2" for each section; they become the "In this journal" contents list.
+          Add photos with the image button. Delete any template sections you don't need.
+        default: |
+          Why we chose this destination, in a few sentences.
+
+          ## Why we chose it
+
+          ## Our story
+
+          ## What to expect with little ones
+
+          ## Things to see and do
+
+          ## Where we stayed
+
+          ## Getting there and getting around
+
+          ## Food, and vegetarian-friendly finds
+
+          ## Preparing your little one
+
+          ## Our itinerary
+
+          ### Day 1
+
+          ### Day 2
+
+          ## What worked well, and what we'd do differently
+
+          ## Closing thoughts
+
+      # --- Closing photo ---
+      - name: closingPhoto
+        label: Closing photo
+        widget: image
+        required: false
+        hint: A meaningful family photo or a beautiful moment to end the article.
+      - name: closingAlt
+        label: Closing photo description
+        widget: string
+        required: false
+      - name: closingCaption
+        label: Closing photo caption
+        widget: string
+        required: false
+        hint: 'Shown in handwriting under the photo, e.g. "Until next time, Cappadocia 🤍"'
+
+      # --- Extras ---
+      - name: mapEmbed
+        label: Google Map
+        widget: text
+        required: false
+        hint: 'In Google Maps: Share → Embed a map → Copy HTML, then paste it here.'
+      - name: usefulLinks
+        label: Useful links
+        label_singular: Link
+        widget: list
+        required: false
+        summary: '{{fields.label}}'
+        fields:
+          - { name: label, label: Link text, widget: string, hint: 'e.g. "Our hotel: Sultan Cave Suites"' }
+          - name: url
+            label: Web address
+            widget: string
+            pattern: ['^https?://', 'Must start with https://']
+      - name: pdfGuide
+        label: Downloadable PDF guide
+        widget: file
+        required: false
+        media_folder: /public/guides
+        public_folder: /guides
+        hint: Upload a PDF and a "Download PDF" box appears at the end of the article.
+
+  # ------------------------------------------------------------------
+  # Site pages: each is a single page, so new ones can't be created here
+  # ------------------------------------------------------------------
+  - name: home
+    label: 'Site page: Homepage'
+    label_singular: Homepage
+    folder: src/content/pages/home
+    path: index
+    media_folder: ''
+    public_folder: ''
+    create: false
+    delete: false
+    identifier_field: title
+    fields:
+      - name: photo
+        label: Hero photo
+        widget: image
+        required: false
+        hint: A beautiful destination photo of all three of you, landscape. It fills the top of the homepage.
+      - { name: photoAlt, label: Hero photo description, widget: string, required: false }
+      - { name: title, label: Introduction heading, widget: string }
+      - { name: intro, label: Introduction opening line, widget: text, required: false }
+      - { name: body, label: Introduction text, widget: markdown }
+
+  - name: about
+    label: 'Site page: About Us'
+    label_singular: About Us
+    folder: src/content/pages/about
+    path: index
+    media_folder: ''
+    public_folder: ''
+    create: false
+    delete: false
+    identifier_field: title
+    fields:
+      - { name: title, label: Heading, widget: string }
+      - { name: intro, label: Short introduction, widget: text, required: false, hint: Also shown in the About section of the homepage. }
+      - { name: photo, label: Family photo, widget: image, required: false, hint: A natural, candid family photo. Portrait works best. }
+      - { name: photoAlt, label: Photo description, widget: string, required: false }
+      - { name: body, label: Our story, widget: markdown }
+      - name: facts
+        label: A few things about us
+        label_singular: Fact
+        widget: list
+        required: false
+        summary: '{{fields.label}}: {{fields.value}}'
+        fields:
+          - { name: label, label: Label, widget: string }
+          - { name: value, label: Value, widget: string }
+
+  - name: contact
+    label: 'Site page: Contact & social links'
+    label_singular: Contact page
+    folder: src/content/pages/contact
+    path: index
+    media_folder: ''
+    public_folder: ''
+    create: false
+    delete: false
+    identifier_field: title
+    fields:
+      - { name: title, label: Heading, widget: string }
+      - { name: intro, label: Introduction, widget: text, required: false }
+      - name: instagram
+        label: Instagram link
+        widget: string
+        hint: 'Your full profile link, e.g. https://www.instagram.com/yourhandle. Used across the whole site.'
+      - { name: linktree, label: Linktree link, widget: string, required: false }
+      - { name: email, label: Email address, widget: string, required: false, hint: Leave empty to hide email. }
+      - { name: body, label: Page text, widget: markdown, required: false }

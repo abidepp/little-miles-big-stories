@@ -1,0 +1,131 @@
+---
+// Share links for an article. These are plain links (no tracking scripts from
+// Facebook/Pinterest), plus a "Copy link" button and, on phones, the native share sheet,
+// which is how people share into Instagram DMs/Stories.
+
+import Icon from './Icon.astro';
+
+interface Props {
+	url: string;
+	title: string;
+	image?: string; // absolute URL, used by Pinterest
+}
+
+const { url, title, image } = Astro.props;
+const u = encodeURIComponent(url);
+const t = encodeURIComponent(title);
+
+const links = [
+	{ label: 'WhatsApp', icon: 'whatsapp', href: `https://wa.me/?text=${t}%20${u}` },
+	{ label: 'Facebook', icon: 'facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${u}` },
+	{
+		label: 'Pinterest',
+		icon: 'pinterest',
+		href: `https://www.pinterest.com/pin/create/button/?url=${u}&description=${t}${image ? `&media=${encodeURIComponent(image)}` : ''}`,
+	},
+	{ label: 'Email', icon: 'mail', href: `mailto:?subject=${t}&body=${u}` },
+] as const;
+---
+
+<div class="share" data-share data-url={url} data-title={title}>
+	<p class="label">Share this journal</p>
+	<ul>
+		<!-- Shown by the script only on devices that support the native share sheet -->
+		<li hidden data-native-share-item>
+			<button type="button" data-native-share><Icon name="share" size={18} /> Share</button>
+		</li>
+		{
+			links.map((link) => (
+				<li>
+					<a href={link.href} target="_blank" rel="noopener">
+						<Icon name={link.icon} size={18} /> {link.label}
+					</a>
+				</li>
+			))
+		}
+		<li>
+			<button type="button" data-copy>
+				<span data-copy-default><Icon name="copy" size={18} /> Copy link</span>
+				<span data-copy-done hidden><Icon name="check" size={18} /> Copied!</span>
+			</button>
+		</li>
+	</ul>
+</div>
+
+<script>
+	// <script> tags in Astro components run in the BROWSER (unlike the --- block,
+	// which runs at build time). Astro bundles this once even if the component is used twice.
+	document.querySelectorAll<HTMLElement>('[data-share]').forEach((box) => {
+		const url = box.dataset.url!;
+		const title = box.dataset.title!;
+
+		const nativeItem = box.querySelector<HTMLElement>('[data-native-share-item]');
+		if (nativeItem && navigator.share) {
+			nativeItem.hidden = false;
+			nativeItem.querySelector('button')?.addEventListener('click', () => {
+				navigator.share({ title, url }).catch(() => {
+					/* user closed the share sheet */
+				});
+			});
+		}
+
+		const copyBtn = box.querySelector<HTMLButtonElement>('[data-copy]');
+		copyBtn?.addEventListener('click', async () => {
+			try {
+				await navigator.clipboard.writeText(url);
+			} catch {
+				window.prompt('Copy this link:', url);
+				return;
+			}
+			const done = copyBtn.querySelector<HTMLElement>('[data-copy-done]')!;
+			const normal = copyBtn.querySelector<HTMLElement>('[data-copy-default]')!;
+			normal.hidden = true;
+			done.hidden = false;
+			setTimeout(() => {
+				normal.hidden = false;
+				done.hidden = true;
+			}, 2000);
+		});
+	});
+</script>
+
+<style>
+	.share {
+		border-block: 1px solid var(--line);
+		padding-block: 20px;
+	}
+	ul {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 12px;
+	}
+	a,
+	button {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 9px 14px;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--ink);
+		font: inherit;
+		font-size: 0.88rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+	a:hover,
+	button:hover {
+		border-color: var(--ink);
+	}
+	button span {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+	}
+	[hidden] {
+		display: none !important;
+	}
+</style>

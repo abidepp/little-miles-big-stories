@@ -1,0 +1,76 @@
+---
+// A country tile: photo with the country name on top. Links to /destinations/<country>.
+import { Image } from 'astro:assets';
+import type { Destination } from '../utils/journals';
+
+interface Props {
+	destination: Destination;
+}
+const { destination } = Astro.props;
+const count = destination.journals.length;
+---
+
+<a href={`/destinations/${destination.slug}`} class="tile">
+	{
+		destination.cover && (
+			<Image src={destination.cover} alt="" widths={[400, 700]} sizes="(max-width: 760px) 50vw, 300px" loading="lazy" />
+		)
+	}
+	<span class="tile-text">
+		<span class="tile-name">{destination.country}</span>
+		<span class="tile-count">{count} {count === 1 ? 'story' : 'stories'}</span>
+	</span>
+</a>
+
+<style>
+	.tile {
+		position: relative;
+		display: block;
+		aspect-ratio: 3 / 4;
+		overflow: hidden;
+		border-radius: var(--radius);
+		background: var(--sand);
+		color: var(--ink);
+	}
+	.tile img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.6s ease;
+	}
+	.tile:hover img {
+		transform: scale(1.04);
+	}
+	/* Soft dark fade at the bottom so white text stays readable over any photo */
+	.tile:has(img) {
+		color: #fffdf9;
+	}
+	.tile:has(img)::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(40, 32, 26, 0.65), rgba(40, 32, 26, 0) 55%);
+	}
+	.tile-text {
+		position: absolute;
+		left: 18px;
+		right: 18px;
+		bottom: 16px;
+		z-index: 1;
+		display: grid;
+	}
+	.tile-name {
+		font-family: var(--font-heading);
+		font-size: 1.9rem;
+		line-height: 1.1;
+	}
+	.tile-count {
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		opacity: 0.9;
+	}
+</style>
