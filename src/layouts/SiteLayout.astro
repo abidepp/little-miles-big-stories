@@ -5,7 +5,7 @@
 
 import { Font } from 'astro:assets';
 import Icon from '../components/Icon.astro';
-import { SITE_TITLE, SITE_DESCRIPTION, SITE_STRAPLINE, SITE_TAGLINE, SITE_PHILOSOPHY, CATEGORIES } from '../consts';
+import { SITE_TITLE, SITE_DESCRIPTION, SITE_TAGLINE, SITE_PHILOSOPHY, CATEGORIES } from '../consts';
 import { getSocial } from '../utils/journals';
 import '../styles/global.css';
 
@@ -25,13 +25,21 @@ const ogImageURL = image ? new URL(image, Astro.site) : undefined;
 
 const social = await getSocial();
 
+// The main menu. (Destination Guides, Family Travel and Destinations pages still exist
+// and are linked from the homepage and the footer; add them here to put them in the menu.)
 const navLinks = [
 	{ href: '/', label: 'Home' },
+	{ href: '/about', label: 'Our story' },
+	{ href: CATEGORIES.journal.href, label: 'Journals' },
+	{ href: '/contact', label: 'Contact' },
+];
+
+const footerLinks = [
 	{ href: CATEGORIES.journal.href, label: CATEGORIES.journal.label },
 	{ href: CATEGORIES.guide.href, label: CATEGORIES.guide.label },
 	{ href: CATEGORIES['family-travel'].href, label: CATEGORIES['family-travel'].label },
 	{ href: '/destinations', label: 'Destinations' },
-	{ href: '/about', label: 'About Us' },
+	{ href: '/about', label: 'Our story' },
 	{ href: '/contact', label: 'Contact' },
 ];
 
@@ -69,7 +77,8 @@ function ariaCurrent(href: string) {
 		{publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
 		<meta name="twitter:card" content={ogImageURL ? 'summary_large_image' : 'summary'} />
 
-		<Font cssVariable="--font-cormorant" preload />
+		<Font cssVariable="--font-bricolage" preload />
+		<Font cssVariable="--font-cormorant" />
 		<Font cssVariable="--font-nunito-sans" preload />
 		<Font cssVariable="--font-caveat" />
 	</head>
@@ -79,8 +88,10 @@ function ariaCurrent(href: string) {
 
 		<header class="site-header">
 			<div class="wrap header-inner">
-				<p class="label strapline">{SITE_STRAPLINE}</p>
-				<a href="/" class="logo">Little Miles, <em>Big Stories</em></a>
+				<a href="/" class="brand">
+					<span class="logo">{SITE_TITLE}</span>
+					<span class="brand-tagline">{SITE_TAGLINE.replace(' 🤍', '')}</span>
+				</a>
 				<nav aria-label="Main">
 					<ul>
 						{
@@ -104,7 +115,7 @@ function ariaCurrent(href: string) {
 		<footer class="site-footer">
 			<div class="wrap footer-inner">
 				<div class="footer-brand">
-					<a href="/" class="logo">Little Miles, <em>Big Stories</em></a>
+					<a href="/" class="logo">{SITE_TITLE}</a>
 					<p class="script footer-tagline">{SITE_TAGLINE}</p>
 					<p class="footer-philosophy">{SITE_PHILOSOPHY}</p>
 				</div>
@@ -112,7 +123,7 @@ function ariaCurrent(href: string) {
 				<nav class="footer-nav" aria-label="Footer">
 					<p class="label">Explore</p>
 					<ul>
-						{navLinks.slice(1).map((link) => (
+						{footerLinks.map((link) => (
 							<li>
 								<a href={link.href}>{link.label}</a>
 							</li>
@@ -159,69 +170,52 @@ function ariaCurrent(href: string) {
 
 <style>
 	/* ---------- Header ---------- */
+	/* Logo + tagline on the left, menu on the right; stacks on small phones */
 	.site-header {
 		border-bottom: 1px solid var(--line);
 		background: var(--paper);
 	}
 	.header-inner {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		text-align: center;
-		padding-block: clamp(20px, 3vw, 32px) 0;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 12px 32px;
+		padding-block: 18px;
 	}
-	.strapline {
-		font-size: 0.68rem;
-		margin-bottom: 10px;
+	.brand {
+		display: grid;
+		gap: 2px;
 	}
 	.logo {
 		font-family: var(--font-heading);
-		font-size: clamp(1.9rem, 5vw, 2.8rem);
-		font-weight: 500;
-		line-height: 1.1;
+		font-size: 1.35rem;
+		font-weight: 600;
+		line-height: 1.2;
 		letter-spacing: -0.01em;
 	}
-	.logo em {
-		font-style: italic;
-		color: var(--accent);
+	.brand-tagline {
+		font-size: 0.78rem;
+		color: var(--muted);
 	}
 
-	nav[aria-label='Main'] {
-		width: 100%;
-		margin-top: clamp(16px, 2.5vw, 24px);
-		border-top: 1px solid var(--line);
-	}
 	nav[aria-label='Main'] ul {
 		list-style: none;
 		display: flex;
-		justify-content: center;
-		gap: clamp(16px, 3vw, 36px);
-		padding-block: 14px;
-		/* On phones the links scroll sideways instead of wrapping into a jumble */
-		overflow-x: auto;
-		scrollbar-width: none;
-		white-space: nowrap;
+		gap: clamp(18px, 3vw, 32px);
 	}
 	nav[aria-label='Main'] a {
-		font-size: 0.74rem;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
+		font-size: 0.92rem;
 		color: var(--muted);
 		padding-block: 4px;
-		border-bottom: 1px solid transparent;
+		border-bottom: 1.5px solid transparent;
 	}
 	nav[aria-label='Main'] a:hover {
 		color: var(--ink);
 	}
 	nav[aria-label='Main'] a[aria-current] {
 		color: var(--ink);
-		border-bottom-color: var(--accent);
-	}
-	@media (max-width: 900px) {
-		nav[aria-label='Main'] ul {
-			justify-content: flex-start;
-		}
+		border-bottom-color: var(--ink);
 	}
 
 	/* ---------- Footer ---------- */

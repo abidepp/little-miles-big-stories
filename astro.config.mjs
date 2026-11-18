@@ -16,7 +16,17 @@ export default defineConfig({
 	// so visitors never connect to Google. Used via <Font /> in SiteLayout and global.css.
 	fonts: [
 		{
-			// Elegant editorial serif for headings
+			// Bold, friendly sans for the logo and headings
+			provider: fontProviders.google(),
+			name: 'Bricolage Grotesque',
+			cssVariable: '--font-bricolage',
+			weights: [500, 600, 700],
+			styles: ['normal'],
+			subsets: ['latin'],
+			fallbacks: ['system-ui', 'sans-serif'],
+		},
+		{
+			// Elegant serif, used in italics for quotes, captions and summaries
 			provider: fontProviders.google(),
 			name: 'Cormorant Garamond',
 			cssVariable: '--font-cormorant',

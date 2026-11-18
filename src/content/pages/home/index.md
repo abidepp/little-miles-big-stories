@@ -2,6 +2,9 @@
 title: "Little Miles, Big Stories 🤍"
 intro: "We believe some of life's biggest memories begin with the smallest journeys."
 photoAlt: "The three of us at one of our favourite destinations"
+heroLabel: "About me"
+heroHeading: "A toddler mom who's still that girl with a world full of dreams."
+heroText: "Hi, I'm Ish. I write to hold on to the moments that make a [finish this sentence in the editor: Site page: Homepage → Hero text]"
 ---
 
 Having little ones doesn't mean putting your travel dreams on hold or compromising on every experience. Sometimes, all it takes is a little twist in the itinerary, a different approach or some thoughtful planning to make the same adventure work for everyone.

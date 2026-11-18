@@ -49,7 +49,7 @@ const journals = defineCollection({
 
 			// Extras
 			mapEmbed: z.string().optional(), // Google Maps "Embed a map" code or its link
-			usefulLinks: z.array(z.object({ label: z.string(), url: z.string().url() })).optional(),
+			usefulLinks: z.array(z.object({ label: z.string(), url: z.url() })).optional(),
 			pdfGuide: z.string().optional(), // e.g. "/guides/cappadocia.pdf" (lives in public/guides)
 		}),
 });
@@ -62,6 +62,10 @@ const pages = defineCollection({
 		z.object({
 			title: z.string().optional(),
 			intro: z.string().optional(),
+			// homepage hero (next to the photo)
+			heroLabel: z.string().optional(),
+			heroHeading: z.string().optional(),
+			heroText: z.string().optional(),
 			photo: image().optional(),
 			photoAlt: z.string().optional(),
 			facts: z.array(z.object({ label: z.string(), value: z.string() })).optional(),

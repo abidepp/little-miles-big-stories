@@ -250,8 +250,11 @@ collections:
         label: Hero photo
         widget: image
         required: false
-        hint: A beautiful destination photo of all three of you, landscape. It fills the top of the homepage.
+        hint: A beautiful destination photo of all three of you. Shown on the left at the top of the homepage.
       - { name: photoAlt, label: Hero photo description, widget: string, required: false }
+      - { name: heroLabel, label: Hero small label, widget: string, required: false, hint: 'e.g. "About me"' }
+      - { name: heroHeading, label: Hero heading, widget: string, required: false, hint: The big bold line next to the photo. }
+      - { name: heroText, label: Hero text, widget: text, required: false, hint: A sentence or two under the heading. }
       - { name: title, label: Introduction heading, widget: string }
       - { name: intro, label: Introduction opening line, widget: text, required: false }
       - { name: body, label: Introduction text, widget: markdown }

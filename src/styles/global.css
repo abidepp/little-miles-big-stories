@@ -10,7 +10,7 @@
 :root {
 	color-scheme: light;
 
-	--paper: #f7f3ee; /* page background */
+	--paper: #faf7f2; /* page background */
 	--surface: #fffdf9; /* cards, boxes */
 	--sand: #e8ded2; /* soft panels, dividers */
 	--sand-soft: #f0e8de;
@@ -26,7 +26,8 @@
 	--radius: 4px; /* editorial: barely rounded */
 	--radius-lg: 10px;
 
-	--font-heading: var(--font-cormorant), Georgia, serif;
+	--font-heading: var(--font-bricolage), system-ui, sans-serif;
+	--font-serif: var(--font-cormorant), Georgia, serif; /* italic accents */
 	--font-body: var(--font-nunito-sans), system-ui, sans-serif;
 	--font-script: var(--font-caveat), cursive;
 
@@ -62,9 +63,9 @@ h2,
 h3,
 h4 {
 	font-family: var(--font-heading);
-	font-weight: 500;
+	font-weight: 600;
 	line-height: 1.12;
-	letter-spacing: -0.01em;
+	letter-spacing: -0.02em;
 	text-wrap: balance;
 }
 
