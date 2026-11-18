@@ -1,8 +1,11 @@
 ---
-// Small line icons, drawn inline so there's no icon font or extra download.
-// Usage: <Icon name="instagram" />
+// Simple line icons, drawn inline (no icon font, no emoji). Usage: <Icon name="calendar" />
+export type IconName =
+	| 'instagram' | 'mail' | 'link' | 'whatsapp' | 'facebook' | 'pinterest' | 'share' | 'copy' | 'check'
+	| 'download' | 'pin' | 'arrow' | 'calendar' | 'wallet' | 'heart' | 'skip' | 'sun' | 'compass' | 'send';
+
 interface Props {
-	name: 'instagram' | 'mail' | 'link' | 'whatsapp' | 'facebook' | 'pinterest' | 'share' | 'copy' | 'check' | 'download' | 'pin' | 'arrow';
+	name: IconName;
 	size?: number;
 }
 const { name, size = 20 } = Astro.props;
@@ -19,74 +22,31 @@ const { name, size = 20 } = Astro.props;
 	stroke-linejoin="round"
 	aria-hidden="true"
 	focusable="false"
+	class="icon"
 >
-	{
-		name === 'instagram' && (
-			<>
-				<rect x="3" y="3" width="18" height="18" rx="5" />
-				<circle cx="12" cy="12" r="4" />
-				<circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
-			</>
-		)
-	}
-	{
-		name === 'mail' && (
-			<>
-				<rect x="3" y="5" width="18" height="14" rx="2" />
-				<path d="m3 7 9 6 9-6" />
-			</>
-		)
-	}
-	{
-		name === 'link' && (
-			<>
-				<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
-				<path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
-			</>
-		)
-	}
+	{name === 'instagram' && <><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" /></>}
+	{name === 'mail' && <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>}
+	{name === 'link' && <><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></>}
 	{name === 'whatsapp' && <path d="M4 20l1.3-4A8 8 0 1 1 8 18.7L4 20Zm5-11c0 3 3 6 6 6l1.2-1.4-2-1-1 .8a4 4 0 0 1-2.6-2.6l.8-1-1-2L9 9Z" />}
 	{name === 'facebook' && <path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8Z" />}
-	{
-		name === 'pinterest' && (
-			<>
-				<circle cx="12" cy="12" r="9" />
-				<path d="M11 8.5c3-1 5.5.6 5 3.3-.4 2.2-2.6 3.3-4.2 2.2M11.8 10.5 9.5 20" />
-			</>
-		)
-	}
-	{
-		name === 'share' && (
-			<>
-				<path d="M12 3v12M8 7l4-4 4 4" />
-				<path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-			</>
-		)
-	}
-	{
-		name === 'copy' && (
-			<>
-				<rect x="8" y="8" width="12" height="12" rx="2" />
-				<path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
-			</>
-		)
-	}
+	{name === 'pinterest' && <><circle cx="12" cy="12" r="9" /><path d="M11 8.5c3-1 5.5.6 5 3.3-.4 2.2-2.6 3.3-4.2 2.2M11.8 10.5 9.5 20" /></>}
+	{name === 'share' && <><path d="M12 3v12M8 7l4-4 4 4" /><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" /></>}
+	{name === 'copy' && <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></>}
 	{name === 'check' && <path d="m5 12 5 5 9-10" />}
-	{
-		name === 'download' && (
-			<>
-				<path d="M12 4v11M7 10l5 5 5-5" />
-				<path d="M5 20h14" />
-			</>
-		)
-	}
-	{
-		name === 'pin' && (
-			<>
-				<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" />
-				<circle cx="12" cy="9.5" r="2.5" />
-			</>
-		)
-	}
+	{name === 'download' && <><path d="M12 4v11M7 10l5 5 5-5" /><path d="M5 20h14" /></>}
+	{name === 'pin' && <><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></>}
 	{name === 'arrow' && <path d="M5 12h14M13 6l6 6-6 6" />}
+	{name === 'calendar' && <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>}
+	{name === 'wallet' && <><path d="M4 7a2 2 0 0 1 2-2h11v4" /><rect x="3" y="7" width="18" height="13" rx="2" /><circle cx="16.5" cy="13.5" r="1.2" fill="currentColor" /></>}
+	{name === 'heart' && <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z" />}
+	{name === 'skip' && <><circle cx="12" cy="12" r="9" /><path d="m6 6 12 12" /></>}
+	{name === 'sun' && <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>}
+	{name === 'compass' && <><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" /></>}
+	{name === 'send' && <path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7Z" />}
 </svg>
+
+<style>
+	.icon {
+		flex-shrink: 0;
+	}
+</style>

@@ -1,279 +1,130 @@
 ---
-// src/pages/index.astro  ->  "/"
+// "/" — Home (About me). Every word comes from src/content/pages/home/index.md
+// (editor: Pages → Home). The main button leads to Our story.
 //
-// DATA FLOW, STEP 3: the page asks for data, then hands it to components.
-//   content (Markdown) -> content.config.ts (validated) -> utils/journals.ts -> this page -> <JournalCard />
-// Nothing here needs editing when a new article is published: it all updates on the next build.
-
-import { Image, getImage } from 'astro:assets';
+// DATA FLOW: Markdown file -> content.config.ts (checked) -> getSingle('home') -> this page.
 import { render } from 'astro:content';
+import { getImage } from 'astro:assets';
 import SiteLayout from '../layouts/SiteLayout.astro';
-import JournalCard from '../components/JournalCard.astro';
-import DestinationTile from '../components/DestinationTile.astro';
+import Photo from '../components/Photo.astro';
 import Icon from '../components/Icon.astro';
-import { SITE_TITLE, SITE_DESCRIPTION, CATEGORIES } from '../consts';
-import { getJournals, getDestinations, getPage, getSocial } from '../utils/journals';
+import { getSingle } from '../utils/content';
 
-const home = await getPage('home');
-const social = await getSocial();
-const { Content: HomeIntro } = await render(home);
+const home = await getSingle('home');
+const { Content } = await render(home); // the paragraphs
+const { label, heading, photo, photoAlt, photoNote, quote, button, banner } = home.data;
 
-const all = await getJournals();
-const journalsOnly = all.filter((j) => j.data.category === 'journal');
-
-// Featured: ticked "Featured" in the editor; falls back to the newest journals.
-const featuredPicked = all.filter((j) => j.data.featured).slice(0, 3);
-const featured = featuredPicked.length > 0 ? featuredPicked : journalsOnly.slice(0, 3);
-const featuredIds = new Set(featured.map((j) => j.id));
-
-const destinations = (await getDestinations()).slice(0, 6);
-const practical = all.filter((j) => j.data.category !== 'journal').slice(0, 3);
-const latest = all.filter((j) => !featuredIds.has(j.id)).slice(0, 6);
-
-const heroOg = home.data.photo ? (await getImage({ src: home.data.photo, width: 1200, height: 630, fit: 'cover', format: 'jpeg' })).src : undefined;
+const og = photo ? (await getImage({ src: photo, width: 1200, height: 630, fit: 'cover', format: 'jpeg' })).src : undefined;
 ---
 
-<SiteLayout description={SITE_DESCRIPTION} image={heroOg}>
-	<!-- 1. Hero: photo on the left, "About me" on the right.
-	     All of it is edited in the editor under Site page: Homepage. -->
-	<section class="wrap hero">
-		<div class="hero-photo">
-			{
-				home.data.photo ? (
-					<Image
-						src={home.data.photo}
-						alt={home.data.photoAlt ?? ''}
-						widths={[500, 800, 1100]}
-						sizes="(max-width: 760px) 100vw, 560px"
-						loading="eager"
-						fetchpriority="high"
-					/>
-				) : (
-					<div class="photo-placeholder" aria-hidden="true" />
-				)
-			}
+<SiteLayout
+	description="Little Miles, Big Stories: a family travel journal by Ish. Honest, free PDF journals on travelling with a little one."
+	image={og}
+>
+	<section class="container section split about">
+		<div class="about-photo">
+			<Photo src={photo} alt={photoAlt} placeholder="Photo: Ish on a trip (portrait)" ratio="4 / 5" eager>
+				{photoNote && <p class="note hand">{photoNote}</p>}
+			</Photo>
 		</div>
-		<div class="hero-text">
-			<p class="label">{home.data.heroLabel ?? 'About me'}</p>
-			<h1>{home.data.heroHeading ?? SITE_TITLE}</h1>
-			{home.data.heroText && <p class="hero-lede">{home.data.heroText}</p>}
-			<div class="actions">
-				<a href="/about" class="btn btn-primary">Read our story</a>
-				<a href={CATEGORIES.journal.href} class="btn">Our journals</a>
+
+		<div class="about-text">
+			<p class="label">{label}</p>
+			<h1 class="h-lg">{heading}</h1>
+			<div class="paragraphs">
+				<Content />
 			</div>
+			{quote && <blockquote class="hand quote">{quote}</blockquote>}
+			<a href={button.url} class="btn">
+				{button.label} <Icon name="arrow" size={18} />
+			</a>
 		</div>
 	</section>
 
-	<!-- 2. About introduction (edited in the editor: Site pages → Homepage) -->
-	<section class="section intro wrap-text">
-		<h2>{home.data.title ?? SITE_TITLE}</h2>
-		{home.data.intro && <p class="intro-lead">{home.data.intro}</p>}
-		<div class="intro-body">
-			<HomeIntro />
-		</div>
-	</section>
-
-	<!-- 3. Featured journals -->
 	{
-		featured.length > 0 && (
-			<section class="section wrap">
-				<div class="section-head">
-					<div>
-						<p class="label">Featured</p>
-						<h2>Destination journals</h2>
-					</div>
-					<a href={CATEGORIES.journal.href} class="text-link">All journals</a>
-				</div>
-				<div class="grid grid-3">
-					{featured.map((journal) => (
-						<JournalCard journal={journal} variant="tall" />
-					))}
-				</div>
-			</section>
-		)
-	}
-
-	<!-- 4. Explore destinations -->
-	{
-		destinations.length > 0 && (
-			<section class="section wrap">
-				<div class="section-head">
-					<div>
-						<p class="label">Explore</p>
-						<h2>Destinations</h2>
-					</div>
-					<a href="/destinations" class="text-link">All destinations</a>
-				</div>
-				<div class="tiles">
-					{destinations.map((destination) => (
-						<DestinationTile destination={destination} />
-					))}
-				</div>
-			</section>
-		)
-	}
-
-	<!-- 5. Family travel tips & practical guides -->
-	<section class="section band">
-		<div class="wrap">
-			<div class="section-head">
-				<div>
-					<p class="label">Plan with confidence</p>
-					<h2>Family travel tips &amp; guides</h2>
-				</div>
-				<p class="band-links">
-					<a href={CATEGORIES.guide.href} class="text-link">Destination guides</a>
-					<a href={CATEGORIES['family-travel'].href} class="text-link">Family travel</a>
-				</p>
+		banner && (
+			<div class="container">
+				<a href={banner.url} class="banner">
+					<span class="label banner-tag">{banner.tag}</span>
+					<span class="banner-text">{banner.text}</span>
+					<Icon name="arrow" size={20} />
+				</a>
 			</div>
-			{
-				practical.length > 0 ? (
-					<div class="grid grid-3">
-						{practical.map((journal) => (
-							<JournalCard journal={journal} showCategory />
-						))}
-					</div>
-				) : (
-					<div class="empty">
-						<h3>Our first guides are on their way</h3>
-						<p>Packing lists, toddler-friendly itineraries and honest advice, coming soon.</p>
-					</div>
-				)
-			}
-		</div>
-	</section>
-
-	<!-- 6. Latest entries -->
-	{
-		latest.length > 0 && (
-			<section class="section wrap">
-				<div class="section-head">
-					<div>
-						<p class="label">Fresh from the journal</p>
-						<h2>Latest entries</h2>
-					</div>
-				</div>
-				<div class="grid">
-					{latest.map((journal) => (
-						<JournalCard journal={journal} showCategory />
-					))}
-				</div>
-			</section>
 		)
 	}
-
-	<!-- 7. Contact & social -->
-	<section class="section wrap-text connect">
-		<p class="label">Come along for the journey</p>
-		<h2>Say hello</h2>
-		<p class="lede">Everyday moments live on Instagram. The full stories live here.</p>
-		<div class="actions">
-			<a href={social.instagram} class="btn btn-primary" target="_blank" rel="noopener"><Icon name="instagram" size={18} /> Instagram</a>
-			<a href="/contact" class="btn"><Icon name="mail" size={18} /> Contact us</a>
-		</div>
-	</section>
 </SiteLayout>
 
 <style>
-	/* ---------- Hero: two columns, stacks on phones ---------- */
-	.hero {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: clamp(28px, 5vw, 56px);
-		align-items: center;
-		padding-block: clamp(32px, 5vw, 56px);
+	.about {
+		padding-bottom: clamp(40px, 6vw, 64px);
 	}
-	.hero-photo img,
-	.photo-placeholder {
-		width: 100%;
-		aspect-ratio: 4 / 3.4;
-		object-fit: cover;
-		border-radius: 16px;
+	.about-photo {
+		position: relative;
+		/* leave room for the note that hangs off the photo */
+		padding-bottom: 28px;
 	}
-	.photo-placeholder {
-		background: var(--sand);
-		border: 1px solid var(--line);
+	.note {
+		position: absolute;
+		right: clamp(-8px, -1vw, 0px);
+		bottom: -28px;
+		max-width: 15rem;
+		padding: 12px 18px;
+		background: var(--white);
+		border: 1px solid var(--sand);
+		border-radius: 14px;
+		box-shadow: 0 8px 24px rgba(59, 42, 32, 0.08);
+		font-size: 1.45rem;
+		color: var(--caramel);
+		transform: rotate(-3deg);
 	}
-	.hero-text .label {
-		color: var(--muted);
+	.about-text .label {
+		margin-bottom: 14px;
 	}
-	.hero h1 {
-		font-size: clamp(2.4rem, 5vw, 3.6rem);
-		font-weight: 700;
-		line-height: 1.08;
-		letter-spacing: -0.025em;
-		margin-block: 14px 20px;
+	.about-text h1 {
+		margin-bottom: 22px;
 	}
-	.hero-lede {
-		font-size: 1.1rem;
-		color: var(--accent);
-		max-width: 46ch;
-		margin-bottom: 28px;
+	.paragraphs {
+		color: var(--cocoa);
 	}
-	@media (max-width: 760px) {
-		.hero {
-			grid-template-columns: 1fr;
-		}
+	.paragraphs :global(p + p) {
+		margin-top: 1em;
 	}
-
-	/* ---------- Intro ---------- */
-	.intro {
-		text-align: center;
-	}
-	.intro h2 {
-		font-size: clamp(2.2rem, 5vw, 3rem);
-	}
-	.intro-lead {
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-size: clamp(1.4rem, 3vw, 1.75rem);
-		line-height: 1.4;
-		color: var(--accent);
-		margin-top: 16px;
-	}
-	.intro-body {
-		text-align: left;
-		margin-top: 32px;
-	}
-	.intro-body :global(p + p) {
-		margin-top: 1.1em;
-	}
-	/* The last three lines of the intro are the family's motto: set them apart */
-	.intro-body :global(p:nth-last-child(-n + 3)) {
-		font-family: var(--font-serif);
-		font-size: 1.35rem;
-		font-style: italic;
-		text-align: center;
+	.quote {
+		margin-block: 28px 32px;
+		padding-left: 18px;
+		border-left: 3px solid var(--biscuit);
+		font-size: clamp(1.6rem, 3vw, 2rem);
+		color: var(--espresso);
 	}
 
-	/* ---------- Destinations ---------- */
-	.tiles {
-		display: grid;
-		gap: clamp(12px, 2vw, 20px);
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
-	}
-
-	/* ---------- Tips band ---------- */
-	.band {
-		background: var(--sand-soft);
-		padding-block: clamp(48px, 8vw, 96px) !important;
-	}
-	.band-links {
+	.banner {
 		display: flex;
-		gap: 20px;
+		align-items: center;
 		flex-wrap: wrap;
+		gap: 10px 18px;
+		margin-bottom: var(--section);
+		padding: 22px clamp(20px, 4vw, 36px);
+		border-radius: var(--radius-card);
+		background: var(--latte);
+		color: var(--espresso);
+		transition: background 0.2s;
 	}
-
-	/* ---------- Connect ---------- */
-	.connect {
-		text-align: center;
+	.banner:hover {
+		background: var(--biscuit);
 	}
-	.connect h2 {
-		font-size: clamp(2.2rem, 5vw, 3rem);
-		margin-block: 8px 12px;
+	.banner-tag {
+		padding: 5px 12px;
+		border-radius: var(--radius-pill);
+		background: var(--espresso);
+		color: var(--white);
+		letter-spacing: 0.12em;
 	}
-	.connect .actions {
-		justify-content: center;
-		margin-top: 28px;
+	.banner-text {
+		flex: 1;
+		font-family: var(--font-display);
+		font-size: clamp(1.35rem, 3vw, 1.7rem);
+		font-weight: 700;
+		line-height: 1.2;
+		min-width: 14rem;
 	}
 </style>

@@ -1,382 +1,110 @@
 ---
-// src/pages/journals/[slug].astro  ->  "/journals/<slug>"
-//
-// One template, every article. getStaticPaths() runs once at build time and returns
-// one entry per Markdown file; Astro then renders this file once for each, passing the
-// entry in as Astro.props. Publishing a new article = a new folder in src/content/journals,
-// never a new page file.
-
+// "/journals/<slug>": a journal's own page. The build guide calls this "later", for
+// when there's more to show than a card. It's ready now: a page is built automatically
+// for any "out now" journal whose Article box (the Markdown body) has text in it.
+// Until then the journal is just a card on /journals.
 import { render } from 'astro:content';
-import { Image, getImage } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import JournalCard from '../../components/JournalCard.astro';
+import Photo from '../../components/Photo.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import Icon from '../../components/Icon.astro';
-import { CATEGORIES } from '../../consts';
-import { getJournals, formatDate, placeLabel, readingTime, slugify, type Journal } from '../../utils/journals';
+import { getJournals, hasPage, type Journal } from '../../utils/content';
 
 export async function getStaticPaths() {
-	const journals = await getJournals();
-	return journals.map((entry) => ({
-		params: { slug: entry.id },
-		props: { entry, all: journals },
-	}));
+	const journals = (await getJournals()).filter(hasPage);
+	return journals.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 interface Props {
 	entry: Journal;
-	all: Journal[];
 }
 
-const { entry, all } = Astro.props;
-const data = entry.data;
+const { entry } = Astro.props;
+const { title, tags, summary, cover, coverAlt, pdf } = entry.data;
+const { Content } = await render(entry);
 
-// render() turns the Markdown into a component, and also lists its headings (for "In this journal").
-const { Content, headings } = await render(entry);
-const contents = headings.filter((h) => h.depth === 2);
-
-const category = CATEGORIES[data.category];
-const place = placeLabel(data);
-const countrySlug = data.country ? slugify(data.country) : undefined;
-
-// Social preview image: cropped to the 1200×630 shape Facebook/WhatsApp/Pinterest expect.
-const ogImage = data.cover
-	? (await getImage({ src: data.cover, width: 1200, height: 630, fit: 'cover', format: 'jpeg' })).src
-	: undefined;
+const og = cover ? (await getImage({ src: cover, width: 1200, height: 630, fit: 'cover', format: 'jpeg' })).src : undefined;
 const pageURL = new URL(`/journals/${entry.id}`, Astro.site).href;
-
-// "Trip at a glance": only the facts this article actually has.
-const glance = [
-	{ label: 'Destination', value: place },
-	{ label: 'When we went', value: data.travelDates },
-	{ label: 'Trip length', value: data.tripLength },
-	{ label: 'Travelled with', value: data.travelledWith },
-	{ label: 'Best for', value: data.bestFor },
-	{ label: 'Total budget', value: data.budget },
-].filter((fact) => fact.value);
-
-// Maps: accept either the full <iframe ...> code from Google Maps' "Embed a map", or just its link.
-// Only Google Maps embed links are allowed, so a mistyped field can't embed something unexpected.
-function mapSrc(raw?: string) {
-	if (!raw) return undefined;
-	const url = (raw.match(/src="([^"]+)"/)?.[1] ?? raw).trim().replaceAll('&amp;', '&');
-	return url.startsWith('https://www.google.com/maps/embed') ? url : undefined;
-}
-const map = mapSrc(data.mapEmbed);
-
-// Related: same country first, then same category.
-const others = all.filter((j) => j.id !== entry.id);
-const related = [
-	...others.filter((j) => countrySlug && j.data.country && slugify(j.data.country) === countrySlug),
-	...others.filter((j) => j.data.category === data.category),
-]
-	.filter((j, i, list) => list.indexOf(j) === i)
-	.slice(0, 3);
 ---
 
-<SiteLayout title={data.title} description={data.excerpt} image={ogImage} type="article" publishedTime={data.date}>
+<SiteLayout title={title} description={summary ?? title} image={og}>
 	<article>
-		<!-- Header -->
-		<header class="post-header wrap-text">
-			<p class="label">
-				<a href={category.href}>{category.singular}</a>
-				{
-					place && (
-						<>
-							<span aria-hidden="true"> · </span>
-							{countrySlug ? <a href={`/destinations/${countrySlug}`}>{place}</a> : place}
-						</>
-					)
-				}
-			</p>
-			<h1>{data.title}</h1>
-			{data.excerpt && <p class="lede">{data.excerpt}</p>}
-			<p class="byline">
-				<time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
-				<span aria-hidden="true"> · </span>
-				{readingTime(entry.body)}
-			</p>
+		<header class="container head">
+			<a href="/journals" class="back"><span aria-hidden="true">←</span> All journals</a>
+			<ul class="tags">{tags.map((tag) => <li class="tag">{tag}</li>)}</ul>
+			<h1 class="h-xl">{title}</h1>
+			{summary && <p class="lede">{summary}</p>}
 		</header>
 
-		<!-- Cover photo: wide, the star of the page -->
-		{
-			data.cover && (
-				<figure class="cover wrap">
-					<Image
-						src={data.cover}
-						alt={data.coverAlt ?? ''}
-						widths={[800, 1200, 1800]}
-						sizes="(max-width: 1180px) 100vw, 1180px"
-						loading="eager"
-						fetchpriority="high"
-					/>
-				</figure>
-			)
-		}
-
-		<div class="wrap-text">
-			<!-- Trip at a glance -->
-			{
-				glance.length > 0 && (
-					<aside class="glance" aria-labelledby="glance-title">
-						<h2 id="glance-title" class="label">Trip at a glance</h2>
-						<dl>
-							{glance.map((fact) => (
-								<div>
-									<dt>{fact.label}</dt>
-									<dd>{fact.value}</dd>
-								</div>
-							))}
-						</dl>
-					</aside>
-				)
-			}
-
-			<!-- Contents: built automatically from the article's ## headings -->
-			{
-				contents.length >= 3 && (
-					<nav class="contents" aria-labelledby="contents-title">
-						<h2 id="contents-title" class="label">In this journal</h2>
-						<ol>
-							{contents.map((h) => (
-								<li>
-									<a href={`#${h.slug}`}>{h.text}</a>
-								</li>
-							))}
-						</ol>
-					</nav>
-				)
-			}
-
-			<!-- The article itself (the Markdown body) -->
-			<div class="prose">
-				<Content />
-			</div>
-
-			<!-- Budget breakdown -->
-			{
-				data.budgetBreakdown && data.budgetBreakdown.length > 0 && (
-					<section class="extra" aria-labelledby="budget-title">
-						<h2 id="budget-title">Budget breakdown</h2>
-						<div class="table-wrap">
-							<table>
-								<thead>
-									<tr>
-										<th scope="col">What</th>
-										<th scope="col">Cost</th>
-									</tr>
-								</thead>
-								<tbody>
-									{data.budgetBreakdown.map((row) => (
-										<tr>
-											<td>{row.item}</td>
-											<td>{row.cost}</td>
-										</tr>
-									))}
-								</tbody>
-								{data.budget && (
-									<tfoot>
-										<tr>
-											<th scope="row">Total</th>
-											<td>{data.budget}</td>
-										</tr>
-									</tfoot>
-								)}
-							</table>
-						</div>
-					</section>
-				)
-			}
-
-			<!-- Map -->
-			{
-				map && (
-					<section class="extra" aria-labelledby="map-title">
-						<h2 id="map-title">On the map</h2>
-						<iframe
-							src={map}
-							title={`Map of ${place || data.title}`}
-							loading="lazy"
-							referrerpolicy="no-referrer-when-downgrade"
-							allowfullscreen
-						/>
-					</section>
-				)
-			}
-
-			<!-- Useful links -->
-			{
-				data.usefulLinks && data.usefulLinks.length > 0 && (
-					<section class="extra" aria-labelledby="links-title">
-						<h2 id="links-title">Useful links</h2>
-						<ul class="links">
-							{data.usefulLinks.map((link) => (
-								<li>
-									<a href={link.url} target="_blank" rel="noopener">
-										{link.label} <Icon name="arrow" size={16} />
-									</a>
-								</li>
-							))}
-						</ul>
-					</section>
-				)
-			}
-
-			<!-- PDF guide -->
-			{
-				data.pdfGuide && (
-					<aside class="pdf">
-						<div>
-							<p class="label">Free download</p>
-							<p class="pdf-title">The {data.destination ?? 'trip'} guide, as a printable PDF</p>
-						</div>
-						<a href={data.pdfGuide} class="btn btn-primary" download>
-							<Icon name="download" size={18} /> Download PDF
-						</a>
-					</aside>
-				)
-			}
+		<div class="container">
+			<Photo src={cover} alt={coverAlt} placeholder={`Cover photo: ${title}`} ratio="16 / 9" sizes="(max-width: 1248px) 100vw, 1200px" eager />
 		</div>
 
-		<!-- Closing family photo -->
-		{
-			data.closingPhoto && (
-				<figure class="closing wrap">
-					<Image
-						src={data.closingPhoto}
-						alt={data.closingAlt ?? ''}
-						widths={[800, 1200, 1800]}
-						sizes="(max-width: 1180px) 100vw, 1180px"
-						loading="lazy"
-					/>
-					{data.closingCaption && <figcaption class="script">{data.closingCaption}</figcaption>}
-				</figure>
-			)
-		}
+		<div class="container prose">
+			<Content />
+		</div>
 
-		<div class="wrap-text">
-			<ShareButtons url={pageURL} title={data.title} image={ogImage ? new URL(ogImage, Astro.site).href : undefined} />
+		<div class="container end">
+			{
+				pdf && (
+					<div class="pdf">
+						<p class="h-md">The full journal, free as a PDF.</p>
+						<a href={pdf} class="btn" download>
+							<Icon name="download" size={18} /> Download the PDF
+						</a>
+					</div>
+				)
+			}
+			<ShareButtons url={pageURL} title={title} image={og ? new URL(og, Astro.site).href : undefined} />
 		</div>
 	</article>
-
-	{
-		related.length > 0 && (
-			<section class="section wrap related">
-				<div class="section-head">
-					<div>
-						<p class="label">Keep exploring</p>
-						<h2>More stories</h2>
-					</div>
-				</div>
-				<div class="grid grid-3">
-					{related.map((journal) => (
-						<JournalCard journal={journal} showCategory />
-					))}
-				</div>
-			</section>
-		)
-	}
 </SiteLayout>
 
 <style>
-	/* ---------- Header ---------- */
-	.post-header {
+	.head {
+		max-width: 52rem;
+		padding-block: clamp(32px, 6vw, 64px) clamp(28px, 4vw, 40px);
 		text-align: center;
-		padding-block: clamp(40px, 7vw, 80px) clamp(28px, 4vw, 44px);
 	}
-	.post-header .label a:hover {
-		color: var(--accent);
+	.back {
+		display: inline-block;
+		margin-bottom: 24px;
+		font-weight: 700;
+		color: var(--caramel);
 	}
-	.post-header h1 {
-		font-size: clamp(2.5rem, 7vw, 4.4rem);
-		margin-block: 14px 18px;
+	.tags {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 8px;
+		margin-bottom: 18px;
 	}
-	.post-header .lede {
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-size: clamp(1.3rem, 2.6vw, 1.6rem);
-		line-height: 1.4;
-	}
-	.byline {
-		margin-top: 18px;
-		font-size: 0.9rem;
-		color: var(--muted);
+	.head h1 {
+		margin-bottom: 16px;
 	}
 
-	.cover {
-		margin-bottom: clamp(36px, 6vw, 64px);
-	}
-	.cover img,
-	.closing img {
-		width: 100%;
-		max-height: 82vh;
-		object-fit: cover;
-		border-radius: var(--radius);
-	}
-
-	/* ---------- Glance & contents ---------- */
-	.glance,
-	.contents {
-		background: var(--surface);
-		border: 1px solid var(--line);
-		padding: clamp(20px, 4vw, 32px);
-		margin-bottom: 28px;
-	}
-	.glance dl {
-		display: grid;
-		gap: 18px 24px;
-		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		margin-top: 16px;
-	}
-	.glance dt {
-		font-size: 0.85rem;
-		color: var(--muted);
-	}
-	.glance dd {
-		font-family: var(--font-heading);
-		font-size: 1.3rem;
-		line-height: 1.25;
-	}
-	.contents ol {
-		margin-top: 14px;
-		padding-left: 1.3em;
-		columns: 2 220px;
-		column-gap: 32px;
-	}
-	.contents li {
-		margin-bottom: 6px;
-		break-inside: avoid;
-	}
-	.contents a:hover {
-		color: var(--accent);
-	}
-
-	/* ---------- Article body ----------
-	   The Markdown's HTML isn't written in this file, so Astro doesn't scope it.
-	   :global(...) reaches it, while `.prose` keeps these rules on this page only. */
+	/* The Markdown's HTML isn't written in this file, so :global() is needed to style it */
 	.prose {
-		margin-top: clamp(32px, 5vw, 48px);
-		font-size: 1.125rem;
-		line-height: 1.8;
+		max-width: 46rem;
+		padding-block: clamp(40px, 6vw, 64px);
+		font-size: 1.1rem;
+		line-height: 1.75;
 	}
 	.prose > :global(* + *) {
-		margin-top: 1.25em;
+		margin-top: 1.2em;
 	}
 	.prose :global(h2) {
 		font-size: clamp(1.9rem, 4vw, 2.4rem);
-		margin-top: 2.2em;
-		scroll-margin-top: 24px;
+		margin-top: 2em;
 	}
 	.prose :global(h3) {
-		font-size: 1.55rem;
-		margin-top: 1.8em;
-	}
-	.prose :global(h2 + *),
-	.prose :global(h3 + *) {
-		margin-top: 0.6em;
+		font-size: 1.5rem;
+		margin-top: 1.6em;
 	}
 	.prose :global(a) {
-		color: var(--accent);
+		color: var(--caramel);
 		text-decoration: underline;
 		text-underline-offset: 3px;
 	}
@@ -384,146 +112,33 @@ const related = [
 	.prose :global(ol) {
 		padding-left: 1.3em;
 	}
-	.prose :global(li + li) {
-		margin-top: 0.45em;
-	}
 	.prose :global(img) {
 		width: 100%;
-		border-radius: var(--radius);
-		margin-block: 2em;
-	}
-	/* Photos can break out wider than the text column on large screens */
-	@media (min-width: 900px) {
-		.prose :global(p:has(> img:only-child)) {
-			margin-inline: -80px;
-		}
+		border-radius: var(--radius-photo);
 	}
 	.prose :global(blockquote) {
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-size: 1.6rem;
-		line-height: 1.4;
-		text-align: center;
-		color: var(--accent);
-		padding-block: 12px;
-		border-block: 1px solid var(--line);
-	}
-	.prose :global(hr) {
-		border: none;
-		text-align: center;
-		margin-block: 3em;
-	}
-	.prose :global(hr)::after {
-		content: '· · ·';
-		letter-spacing: 0.6em;
-		color: var(--taupe);
-	}
-	.prose :global(table) {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: 1rem;
-	}
-	.prose :global(th),
-	.prose :global(td) {
-		text-align: left;
-		padding: 10px 12px;
-		border-bottom: 1px solid var(--line);
-	}
-	.prose :global(iframe) {
-		width: 100%;
-		aspect-ratio: 16 / 10;
-		border: 0;
+		font-family: var(--font-script);
+		font-size: 1.9rem;
+		line-height: 1.25;
+		color: var(--caramel);
+		padding-left: 18px;
+		border-left: 3px solid var(--biscuit);
 	}
 
-	/* ---------- Extras ---------- */
-	.extra {
-		margin-top: clamp(48px, 7vw, 72px);
+	.end {
+		max-width: 46rem;
+		padding-bottom: var(--section);
+		display: grid;
+		gap: 32px;
 	}
-	.extra h2 {
-		font-size: clamp(1.9rem, 4vw, 2.4rem);
-		margin-bottom: 18px;
-	}
-	.table-wrap {
-		overflow-x: auto;
-	}
-	table {
-		width: 100%;
-		border-collapse: collapse;
-		background: var(--surface);
-		border: 1px solid var(--line);
-	}
-	th,
-	td {
-		text-align: left;
-		padding: 12px 16px;
-		border-bottom: 1px solid var(--line);
-	}
-	thead th {
-		font-size: 0.75rem;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-	td:last-child {
-		text-align: right;
-		white-space: nowrap;
-	}
-	tfoot th,
-	tfoot td {
-		font-weight: 700;
-		border-bottom: 0;
-	}
-	iframe {
-		width: 100%;
-		aspect-ratio: 16 / 10;
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-	}
-	.links {
-		list-style: none;
-		border-top: 1px solid var(--line);
-	}
-	.links a {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 12px;
-		padding-block: 14px;
-		border-bottom: 1px solid var(--line);
-		font-weight: 600;
-	}
-	.links a:hover {
-		color: var(--accent);
-	}
-
 	.pdf {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
-		gap: 20px;
-		flex-wrap: wrap;
-		margin-top: clamp(48px, 7vw, 72px);
-		padding: clamp(20px, 4vw, 32px);
-		background: var(--sand-soft);
-	}
-	.pdf-title {
-		font-family: var(--font-heading);
-		font-size: 1.5rem;
-		line-height: 1.25;
-		margin-top: 4px;
-	}
-
-	/* ---------- Closing ---------- */
-	.closing {
-		margin-block: clamp(56px, 8vw, 96px) clamp(32px, 5vw, 48px);
-		text-align: center;
-	}
-	.closing figcaption {
-		font-size: 1.6rem;
-		margin-top: 16px;
-	}
-	/* Share buttons: same gap whether or not there's a closing photo above */
-	article > .wrap-text:last-child {
-		margin-top: clamp(40px, 6vw, 64px);
+		gap: 16px;
+		padding: clamp(22px, 4vw, 32px);
+		border-radius: var(--radius-card);
+		background: var(--latte);
 	}
 </style>

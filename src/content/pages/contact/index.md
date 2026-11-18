@@ -1,11 +1,5 @@
 ---
-title: "Say hello"
-intro: "Questions about a destination, a collaboration idea, or just want to share your own family adventure? We'd love to hear from you."
-email: ""
-instagram: "https://www.instagram.com/"
-linktree: "https://linktr.ee/"
+heading: "Say hello."
+text: "A question about a journal, a place you’d love us to write about, or your own family trip to share? We read every message."
+privacy: "We only use your name and email to reply to your message. We won’t add you to a mailing list or share your details with anyone. Messages are delivered to our inbox through Web3Forms. To ask us to delete your message, just get in touch."
 ---
-
-The quickest way to reach us is a message on Instagram, where we share the everyday moments from our trips.
-
-For collaborations, press or anything longer, email is best. We read every message and reply as soon as little-one schedules allow.

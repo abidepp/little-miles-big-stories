@@ -1,156 +1,144 @@
 ---
-// One article card: photo first, then place, title and excerpt.
-// Used on the homepage, the three category pages and destination pages.
-//   <JournalCard journal={entry} />                 normal card
-//   <JournalCard journal={entry} variant="tall" />   portrait photo (featured)
-//   <JournalCard journal={entry} variant="wide" />   photo beside text
-
-import { Image } from 'astro:assets';
-import { CATEGORIES } from '../consts';
-import { formatDate, placeLabel, type Journal } from '../utils/journals';
+// One journal on the Journals page.
+//  - "out now": big card with cover, tags, title, text, "Free" + Download the PDF
+//  - "coming soon": smaller, quieter card (optionally with a link, e.g. "Tell us")
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
+import { hasPage, type Journal } from '../utils/content';
 
 interface Props {
 	journal: Journal;
-	variant?: 'default' | 'tall' | 'wide';
-	headingLevel?: 2 | 3;
-	showCategory?: boolean;
 }
 
-const { journal, variant = 'default', headingLevel = 3, showCategory = false } = Astro.props;
-const { title, date, excerpt, cover, coverAlt, category } = journal.data;
-const place = placeLabel(journal.data);
-const Heading = `h${headingLevel}`;
+const { journal } = Astro.props;
+const { title, status, tags, summary, cover, coverAlt, pdf, cta } = journal.data;
+const page = hasPage(journal) ? `/journals/${journal.id}` : undefined;
 ---
 
-<article class:list={['card', variant]}>
-	<a href={`/journals/${journal.id}`} class="card-link">
-		<div class="card-img">
-			{
-				cover ? (
-					<Image
-						src={cover}
-						alt={coverAlt ?? ''}
-						widths={variant === 'default' ? [400, 700] : [500, 800, 1100]}
-						sizes={variant === 'wide' ? '(max-width: 760px) 100vw, 600px' : '(max-width: 760px) 100vw, 400px'}
-						loading="lazy"
-					/>
-				) : (
-					<div class="no-photo" aria-hidden="true">
-						<span>{place || title}</span>
-					</div>
-				)
-			}
-		</div>
-		<div class="card-body">
-			<p class="label card-meta">
-				{showCategory && <span>{CATEGORIES[category].singular}</span>}
-				{showCategory && place && <span aria-hidden="true"> · </span>}
-				{place && <span>{place}</span>}
-			</p>
-			<Heading class="card-title">{title}</Heading>
-			{excerpt && <p class="excerpt">{excerpt}</p>}
-			<p class="date"><time datetime={date.toISOString()}>{formatDate(date, 'month')}</time></p>
-		</div>
-	</a>
-</article>
+{
+	status === 'out-now' ? (
+		<article class="journal">
+			<Photo src={cover} alt={coverAlt} placeholder={`Cover photo: ${title}`} ratio="4 / 3" class="journal-photo" />
+			<div class="journal-body">
+				<ul class="tags">
+					{tags.map((tag) => (
+						<li class="tag">{tag}</li>
+					))}
+				</ul>
+				<h3 class="h-md">{page ? <a href={page}>{title}</a> : title}</h3>
+				{summary && <p class="lede">{summary}</p>}
+				<div class="journal-actions">
+					<span class="free hand">Free</span>
+					{pdf ? (
+						<a href={pdf} class="btn" download>
+							<Icon name="download" size={18} /> Download the PDF
+						</a>
+					) : (
+						<span class="btn btn-light" aria-disabled="true">
+							PDF coming soon
+						</span>
+					)}
+					{page && (
+						<a href={page} class="read">
+							Read the journal <Icon name="arrow" size={16} />
+						</a>
+					)}
+				</div>
+			</div>
+		</article>
+	) : (
+		<article class="soon card">
+			<p class="label">Coming soon</p>
+			<h3 class="h-md">{title}</h3>
+			{summary && <p>{summary}</p>}
+			{cta && (
+				<a href={cta.url} class="soon-link">
+					{cta.label} <Icon name="arrow" size={16} />
+				</a>
+			)}
+		</article>
+	)
+}
 
 <style>
-	.card-link {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-	}
-
-	.card-img {
-		position: relative;
-		aspect-ratio: 4 / 3;
-		overflow: hidden;
-		background: var(--sand);
-		border-radius: var(--radius);
-	}
-	.card-img img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transition: transform 0.6s ease;
-	}
-	.card-link:hover .card-img img {
-		transform: scale(1.03);
-	}
-	.no-photo {
-		height: 100%;
+	.journal {
 		display: grid;
-		place-items: center;
-		padding: 16px;
-		text-align: center;
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-size: 1.5rem;
-		color: var(--muted);
-	}
-
-	.card-body {
-		padding-top: 18px;
-	}
-	.card-meta {
-		margin-bottom: 8px;
-	}
-	.card-title {
-		font-size: 1.6rem;
-		margin-bottom: 8px;
-	}
-	.card-link:hover .card-title {
-		color: var(--accent);
-	}
-	.excerpt {
-		color: var(--muted);
-		font-size: 0.98rem;
-		display: -webkit-box;
-		-webkit-line-clamp: 3;
-		line-clamp: 3;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-	.date {
-		margin-top: 10px;
-		font-size: 0.85rem;
-		color: var(--muted);
-	}
-
-	/* Tall: Pinterest-style portrait photo */
-	.tall .card-img {
-		aspect-ratio: 4 / 5;
-	}
-	.tall .card-title {
-		font-size: 1.9rem;
-	}
-
-	/* Wide: photo beside the text */
-	.wide .card-link {
-		display: grid;
-		grid-template-columns: 1.15fr 1fr;
-		gap: clamp(24px, 4vw, 56px);
+		gap: clamp(24px, 4vw, 48px);
 		align-items: center;
+		background: var(--white);
+		border: 1px solid var(--sand);
+		border-radius: var(--radius-card);
+		padding: clamp(14px, 2vw, 20px);
 	}
-	.wide .card-img {
-		aspect-ratio: 5 / 4;
-	}
-	.wide .card-body {
-		padding-top: 0;
-	}
-	.wide .card-title {
-		font-size: clamp(2rem, 4vw, 2.8rem);
-	}
-	.wide .excerpt {
-		font-size: 1.1rem;
-	}
-	@media (max-width: 760px) {
-		.wide .card-link {
-			grid-template-columns: 1fr;
-			gap: 0;
+	@media (min-width: 820px) {
+		.journal {
+			grid-template-columns: 1.1fr 1fr;
 		}
-		.wide .card-body {
-			padding-top: 18px;
-		}
+	}
+	.journal :global(.journal-photo) {
+		border-radius: calc(var(--radius-card) - 6px);
+	}
+	.journal-body {
+		padding: clamp(4px, 2vw, 20px);
+	}
+	.tags {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 18px;
+	}
+	.journal h3 {
+		margin-bottom: 12px;
+	}
+	.journal h3 a:hover {
+		color: var(--caramel);
+	}
+	.journal-actions {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 12px 18px;
+		margin-top: 24px;
+	}
+	.free {
+		font-size: 1.9rem;
+		color: var(--caramel);
+	}
+	[aria-disabled='true'] {
+		cursor: default;
+		color: var(--cocoa);
+	}
+	.read {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-weight: 700;
+		color: var(--caramel);
+	}
+	.read:hover {
+		color: var(--caramel-dark);
+	}
+
+	.soon {
+		background: var(--oat);
+		border-color: transparent;
+	}
+	.soon h3 {
+		margin-block: 8px;
+	}
+	.soon p:not(.label) {
+		color: var(--cocoa);
+	}
+	.soon-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-top: 14px;
+		font-weight: 700;
+		color: var(--caramel);
+	}
+	.soon-link:hover {
+		color: var(--caramel-dark);
 	}
 </style>

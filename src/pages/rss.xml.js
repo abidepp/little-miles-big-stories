@@ -1,21 +1,19 @@
-// src/pages/rss.xml.js  ->  "/rss.xml"
+// "/rss.xml": a feed of the published journals, for feed readers.
 // An "endpoint": Astro calls GET() at build time and saves the result as a file.
-
 import rss from '@astrojs/rss';
-import { getJournals } from '../utils/journals';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getJournals, getSingle, hasPage } from '../utils/content';
 
 export async function GET(context) {
-	const journals = await getJournals();
+	const { data: site } = await getSingle('site');
+	const journals = (await getJournals()).filter((j) => j.data.status === 'out-now');
 	return rss({
-		title: SITE_TITLE,
-		description: SITE_DESCRIPTION,
+		title: site.title,
+		description: site.tagline,
 		site: context.site,
 		items: journals.map((journal) => ({
 			title: journal.data.title,
-			pubDate: journal.data.date,
-			description: journal.data.excerpt,
-			link: `/journals/${journal.id}/`,
+			description: journal.data.summary,
+			link: hasPage(journal) ? `/journals/${journal.id}/` : '/journals/',
 		})),
 	});
 }

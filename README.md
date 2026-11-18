@@ -1,35 +1,26 @@
 # Little Miles, Big Stories
 
-A family travel journal and practical travel resource, built with [Astro](https://docs.astro.build) and deployed as a static site on Cloudflare Workers.
-
-**Publishing articles:** see [PUBLISHING.md](PUBLISHING.md). Articles are written in the editor at `/admin` (Sveltia CMS); no code needed.
+A family travel journal by Ish. Static [Astro](https://docs.astro.build) site on Cloudflare Workers.
+Spec: the *Website Build Guide* (Nov 2026). Editing content: [PUBLISHING.md](PUBLISHING.md).
 
 ## How it fits together
 
 ```text
-src/content/journals/<slug>/index.md   one folder per article (+ its photos)
-src/content/pages/{home,about,contact} editable page text, photos, social links
-src/content.config.ts                  schema: the fields every article may have
-public/admin/config.yml                the editor's form (must match the schema)
-src/utils/journals.ts                  getJournals(), getDestinations(), …
-src/pages/                             one file per route; [slug] = one page per article
-src/layouts/SiteLayout.astro           shared <head>, header, footer
-src/components/                        JournalCard, ShareButtons, CategoryListing, …
+src/content/pages/<page>/index.md      all page text & photos (site, home, our-story, journals, contact)
+src/content/journals/<slug>/index.md   one folder per journal (+ cover photo); PDFs go in public/journals
+src/content.config.ts                  schemas: what fields each file must have
+public/admin/config.yml                the editor's forms (must match the schemas)
+src/utils/content.ts                   getSingle(), getJournals(), hasPage()
+src/layouts/SiteLayout.astro           header, footer, fonts, <head>
+src/styles/global.css                  colours, fonts, spacing as CSS variables
+src/components/                        Photo, JournalCard, Icon, ShareButtons
+src/pages/                             index, our-story, journals/, contact, 404, rss.xml
 ```
 
-Publishing in the editor → commit to `main` (via a draft PR) → Cloudflare runs `npm run build` → new HTML is live.
+Edit in `/admin` → commit to GitHub → Cloudflare runs `npm run build` → live in ~2 minutes.
 
-## Routes
-
-| URL | What |
-|---|---|
-| `/` | Homepage |
-| `/journals`, `/destination-guides`, `/family-travel` | Article lists by `category` |
-| `/journals/<slug>` | Every article (any category) |
-| `/destinations`, `/destinations/<country>` | Generated from each article's `country` |
-| `/about`, `/contact` | From `src/content/pages` |
-| `/rss.xml`, `/sitemap-index.xml` | Feeds |
-| `/admin` | The editor |
+**Add a page later** (e.g. "Our work"): create `src/pages/our-work.astro` using `SiteLayout`, then add it to `navLinks` in the layout.
+**Add a journal:** a new folder in `src/content/journals` (or Journals → New in the editor).
 
 ## Commands
 
@@ -38,4 +29,4 @@ Publishing in the editor → commit to `main` (via a draft PR) → Cloudflare ru
 | `npm install` | Install dependencies |
 | `npm run dev` | Dev server at `localhost:4321` (editor at `/admin/index.html`) |
 | `npm run build` | Build to `./dist/` |
-| `npm run preview` | Preview the build |
+| `npx wrangler deploy` | Deploy `./dist` (Workers Builds does this on every push) |

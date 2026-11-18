@@ -1,4 +1,5 @@
 ---
+status: draft  # hidden: not in the launch plan (BUILD guide). Change to out-now to show it.
 title: A Weekend in the Yorkshire Dales
 excerpt: Waterfalls, muddy wellies and the best scones we've ever had.
 date: 2026-10-15

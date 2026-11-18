@@ -1,7 +1,13 @@
-   {
-     "name": "little-miles-big-stories",
-     "compatibility_date": "2026-11-01",
-     "assets": {
-       "directory": "./dist"
-     }
-   }
+// Cloudflare Workers config. The site is fully static: `npm run build` writes HTML,
+// CSS, images and PDFs to ./dist, and Cloudflare serves those files as-is (no adapter,
+// no server code). Deploy: Workers Builds runs `npm run build` then `npx wrangler deploy`
+// on every push to main.
+{
+	"name": "little-miles-big-stories",
+	"compatibility_date": "2026-11-01",
+	"assets": {
+		"directory": "./dist",
+		// Unknown URLs show our friendly 404 page (src/pages/404.astro)
+		"not_found_handling": "404-page"
+	}
+}

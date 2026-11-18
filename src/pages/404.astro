@@ -1,16 +1,17 @@
 ---
-// Shown for any URL that doesn't exist (Cloudflare serves dist/404.html).
+// Shown for any address that doesn't exist (wrangler.jsonc: not_found_handling).
 import SiteLayout from '../layouts/SiteLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
 
-<SiteLayout title="Page not found">
-	<section class="wrap-text lost">
-		<p class="label">404</p>
-		<h1>This path doesn't lead anywhere</h1>
-		<p class="lede">Even the best-planned trips take a wrong turn. Let's get you back on track.</p>
+<SiteLayout title="Page not found" description="This page doesn't exist.">
+	<section class="container section lost">
+		<p class="hand note">oops, wrong turn</p>
+		<h1 class="h-lg">This path doesn’t lead anywhere.</h1>
+		<p class="lede">Even the best-planned trips take a detour. Let’s get you back on track.</p>
 		<div class="actions">
-			<a href="/" class="btn btn-primary">Home</a>
-			<a href="/journals" class="btn">Our journals</a>
+			<a href="/" class="btn">Home <Icon name="arrow" size={18} /></a>
+			<a href="/journals" class="btn btn-light">Our journals</a>
 		</div>
 	</section>
 </SiteLayout>
@@ -18,14 +19,20 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 <style>
 	.lost {
 		text-align: center;
-		padding-block: clamp(64px, 12vw, 140px) 0;
+		max-width: 44rem;
+	}
+	.note {
+		font-size: 1.8rem;
+		color: var(--caramel);
 	}
 	h1 {
-		font-size: clamp(2.4rem, 6vw, 3.6rem);
-		margin-block: 10px 14px;
+		margin-block: 8px 16px;
 	}
 	.actions {
+		display: flex;
+		gap: 12px;
 		justify-content: center;
+		flex-wrap: wrap;
 		margin-top: 28px;
 	}
 </style>

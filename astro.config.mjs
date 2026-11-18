@@ -6,50 +6,42 @@ import { defineConfig, fontProviders } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	// TODO: when littlemilesbigstories.com is connected in Cloudflare, change this to
-	// 'https://littlemilesbigstories.com' (and `site_url` in public/admin/config.yml).
-	// It's used for share links, social previews, the sitemap and RSS.
+	// TODO: when littlemilesbigstories.com is connected, change this to
+	// 'https://littlemilesbigstories.com' (and site_url in public/admin/config.yml,
+	// and Sitemap in public/robots.txt). Used for share links, social previews and the sitemap.
 	site: 'https://little-miles-big-stories.abinavdepp.workers.dev/',
 	integrations: [mdx(), sitemap()],
 
-	// Fonts API: downloaded from Google once at build time and served from this site,
-	// so visitors never connect to Google. Used via <Font /> in SiteLayout and global.css.
+	// Old addresses that may already have been shared
+	redirects: {
+		'/about': '/our-story',
+	},
+
+	// Fonts API: downloaded from Google once at build time and served from this site.
+	// To change the heading font, swap the first entry (and keep cssVariable the same).
 	fonts: [
 		{
-			// Bold, friendly sans for the logo and headings
-			provider: fontProviders.google(),
-			name: 'Bricolage Grotesque',
-			cssVariable: '--font-bricolage',
-			weights: [500, 600, 700],
-			styles: ['normal'],
-			subsets: ['latin'],
-			fallbacks: ['system-ui', 'sans-serif'],
-		},
-		{
-			// Elegant serif, used in italics for quotes, captions and summaries
 			provider: fontProviders.google(),
 			name: 'Cormorant Garamond',
-			cssVariable: '--font-cormorant',
-			weights: [500, 600],
-			styles: ['normal', 'italic'],
+			cssVariable: '--font-heading-face',
+			weights: [600, 700],
+			styles: ['normal'],
 			subsets: ['latin'],
 			fallbacks: ['Georgia', 'serif'],
 		},
 		{
-			// Calm, very readable sans for long articles
 			provider: fontProviders.google(),
 			name: 'Nunito Sans',
-			cssVariable: '--font-nunito-sans',
-			weights: [400, 600, 700],
+			cssVariable: '--font-body-face',
+			weights: [400, 700],
 			styles: ['normal'],
 			subsets: ['latin'],
 			fallbacks: ['system-ui', 'sans-serif'],
 		},
 		{
-			// Handwritten touch for the tagline only, like a note in a journal
 			provider: fontProviders.google(),
 			name: 'Caveat',
-			cssVariable: '--font-caveat',
+			cssVariable: '--font-hand-face',
 			weights: [500],
 			styles: ['normal'],
 			subsets: ['latin'],

@@ -1,0 +1,242 @@
+---
+// "/our-story": the family and how they travel. Seven sections, all from
+// src/content/pages/our-story/index.md (editor: Pages → Our story).
+// The main button leads to Journals.
+import SiteLayout from '../layouts/SiteLayout.astro';
+import Photo from '../components/Photo.astro';
+import Icon from '../components/Icon.astro';
+import { getSingle } from '../utils/content';
+
+const { data } = await getSingle('ourStory');
+const { intro, growing, outdoors, band, needs, places, closing } = data;
+
+const needIcons = ['sun', 'heart', 'wallet'] as const;
+---
+
+<SiteLayout title="Our story" description="Ish, her partner and their five-year-old little dino: how a young family keeps exploring, a little differently.">
+	<!-- 1. Intro -->
+	<section class="container section split">
+		<div>
+			<p class="label">Our story</p>
+			<h1 class="h-lg intro-heading">{intro.heading}</h1>
+			<p class="lede">{intro.text}</p>
+		</div>
+		<Photo src={intro.photo} alt={intro.photoAlt} placeholder="Photo: the three of us together" ratio="5 / 4" eager />
+	</section>
+
+	<!-- 2. From little passenger to fellow traveller -->
+	<section class="container section-tight">
+		<h2 class="h-md section-heading">{growing.heading}</h2>
+		<ol class="cards timeline">
+			{
+				growing.cards.map((card, i) => (
+					<li class="card">
+						<span class="step" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+						<h3>{card.title}</h3>
+						<p>{card.text}</p>
+					</li>
+				))
+			}
+		</ol>
+	</section>
+
+	<!-- 3. Beaches to hiking trails -->
+	<section class="container section split">
+		<Photo src={outdoors.photo} alt={outdoors.photoAlt} placeholder="Photo: little dino on a beach or trail" ratio="4 / 5" />
+		<div>
+			<h2 class="h-lg">{outdoors.heading}</h2>
+			<p class="lede outdoors-text">{outdoors.text}</p>
+		</div>
+	</section>
+
+	<!-- 4. Latte band -->
+	<section class="band">
+		<div class="container band-inner">
+			<p class="hand band-kicker">{band.kicker}</p>
+			<h2 class="h-lg">{band.heading}</h2>
+			<p class="band-text">{band.text}</p>
+		</div>
+	</section>
+
+	<!-- 5. Nobody's needs get left at home -->
+	<section class="container section">
+		<div class="needs-head">
+			<h2 class="h-lg">{needs.heading}</h2>
+			<p class="lede">{needs.text}</p>
+		</div>
+		<ul class="cards">
+			{
+				needs.cards.map((card, i) => (
+					<li class="card need">
+						<span class="icon-dot">
+							<Icon name={needIcons[i % needIcons.length]} size={22} />
+						</span>
+						<h3>{card.title}</h3>
+						<p>{card.text}</p>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+
+	<!-- 6. Where little dino has been so far (dark band) -->
+	<section class="dark">
+		<div class="container section">
+			<h2 class="h-lg">{places.heading}</h2>
+			<ul class="places">
+				{
+					places.items.map((place) => (
+						<li class="place">
+							<Icon name="pin" size={20} />
+							<span>
+								<span class="place-name">{place.name}</span>
+								{place.note && <span class="place-note">{place.note}</span>}
+							</span>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+
+	<!-- 7. Closing -->
+	<section class="container section closing">
+		<p class="hand closing-kicker">{closing.kicker}</p>
+		<h2 class="h-lg">{closing.heading}</h2>
+		<a href={closing.button.url} class="btn">
+			{closing.button.label} <Icon name="arrow" size={18} />
+		</a>
+	</section>
+</SiteLayout>
+
+<style>
+	.label {
+		margin-bottom: 14px;
+	}
+	.intro-heading {
+		margin-bottom: 20px;
+	}
+	.section-tight {
+		padding-bottom: var(--section);
+	}
+	.section-heading {
+		margin-bottom: 24px;
+	}
+
+	.timeline {
+		list-style: none;
+	}
+	.timeline .card,
+	.need {
+		position: relative;
+	}
+	.step {
+		display: block;
+		font-family: var(--font-display);
+		font-size: 2.4rem;
+		font-weight: 700;
+		line-height: 1;
+		color: var(--biscuit);
+		margin-bottom: 14px;
+	}
+	.card h3 {
+		font-size: 1.55rem;
+		margin-bottom: 8px;
+	}
+	.card p {
+		color: var(--cocoa);
+	}
+
+	.outdoors-text {
+		margin-top: 20px;
+	}
+
+	.band {
+		background: var(--latte);
+		padding-block: var(--section);
+		text-align: center;
+	}
+	.band-inner {
+		max-width: 52rem;
+	}
+	.band-kicker {
+		font-size: 1.7rem;
+		color: var(--caramel-dark);
+		margin-bottom: 10px;
+	}
+	.band-text {
+		margin-top: 20px;
+		font-size: 1.1em;
+		color: var(--espresso); /* espresso, not cocoa, on Latte (contrast) */
+	}
+
+	.needs-head {
+		max-width: 44rem;
+		margin-bottom: 32px;
+	}
+	.needs-head h2 {
+		margin-bottom: 14px;
+	}
+	.cards {
+		list-style: none;
+	}
+	.icon-dot {
+		display: inline-grid;
+		place-items: center;
+		width: 46px;
+		height: 46px;
+		border-radius: 50%;
+		background: var(--oat);
+		color: var(--caramel);
+		margin-bottom: 16px;
+	}
+
+	.dark {
+		background: var(--espresso);
+		color: var(--warm-white);
+	}
+	.places {
+		list-style: none;
+		display: grid;
+		gap: 14px;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+		margin-top: 32px;
+	}
+	.place {
+		display: flex;
+		gap: 12px;
+		align-items: flex-start;
+		padding: 20px;
+		border: 1px solid rgba(232, 225, 214, 0.22);
+		border-radius: var(--radius-card);
+		color: var(--biscuit);
+	}
+	.place > span {
+		display: grid;
+		gap: 4px;
+	}
+	.place-name {
+		font-family: var(--font-display);
+		font-size: 1.45rem;
+		font-weight: 700;
+		line-height: 1.15;
+		color: var(--warm-white);
+	}
+	.place-note {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--biscuit);
+	}
+
+	.closing {
+		text-align: center;
+	}
+	.closing-kicker {
+		font-size: 1.7rem;
+		color: var(--caramel);
+		margin-bottom: 8px;
+	}
+	.closing h2 {
+		margin-bottom: 28px;
+	}
+</style>

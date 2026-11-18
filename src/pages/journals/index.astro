@@ -1,10 +1,156 @@
 ---
-// "/journals": every article whose category is "journal".
+// "/journals": why the journals help, then every journal.
+// Page copy: src/content/pages/journals/index.md (editor: Pages → Journals page).
+// The cards: one per folder in src/content/journals (editor: Journals). Adding a
+// journal there makes it appear here automatically; no code changes.
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import CategoryListing from '../../components/CategoryListing.astro';
-import { CATEGORIES } from '../../consts';
+import JournalCard from '../../components/JournalCard.astro';
+import Icon from '../../components/Icon.astro';
+import { getSingle, getJournals } from '../../utils/content';
+
+const { data } = await getSingle('journalsPage');
+const journals = await getJournals();
+const outNow = journals.filter((j) => j.data.status === 'out-now');
+const comingSoon = journals.filter((j) => j.data.status === 'coming-soon');
 ---
 
-<SiteLayout title={CATEGORIES.journal.label} description={CATEGORIES.journal.intro}>
-	<CategoryListing category="journal" />
+<SiteLayout title="Journals" description={data.text}>
+	<!-- 1. Intro -->
+	<section class="container section intro">
+		<p class="label">{data.label}</p>
+		<h1 class="h-xl">{data.heading}</h1>
+		<p class="lede">{data.text}</p>
+	</section>
+
+	<!-- 2. Inside every journal -->
+	<section class="container inside-wrap">
+		<div class="inside">
+			<h2 class="h-md">{data.insideHeading}</h2>
+			<ul>
+				{
+					data.inside.map((item) => (
+						<li>
+							<span class="icon-dot">
+								<Icon name={item.icon} size={22} />
+							</span>
+							<div>
+								<h3>{item.title}</h3>
+								<p>{item.text}</p>
+							</div>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+
+	<!-- 3. Why our journals -->
+	<section class="container section">
+		<h2 class="h-lg why-heading">{data.whyHeading}</h2>
+		<ul class="cards why">
+			{data.why.map((line) => <li class="card">{line}</li>)}
+		</ul>
+	</section>
+
+	<!-- 4. The journals -->
+	<section class="container journals" id="journals">
+		<h2 class="h-lg list-heading">{data.listHeading}</h2>
+		<div class="list">
+			{outNow.map((journal) => <JournalCard journal={journal} />)}
+		</div>
+		{
+			comingSoon.length > 0 && (
+				<div class="cards soon">
+					{comingSoon.map((journal) => (
+						<JournalCard journal={journal} />
+					))}
+				</div>
+			)
+		}
+	</section>
 </SiteLayout>
+
+<style>
+	.intro {
+		max-width: 56rem;
+		margin-inline: auto;
+		text-align: center;
+	}
+	.intro h1 {
+		margin-block: 14px 22px;
+	}
+
+	.inside {
+		background: var(--oat);
+		border-radius: var(--radius-card);
+		padding: clamp(28px, 5vw, 56px);
+	}
+	.inside h2 {
+		margin-bottom: 28px;
+	}
+	.inside ul {
+		list-style: none;
+		display: grid;
+		gap: 28px 40px;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+	}
+	.inside li {
+		display: flex;
+		gap: 16px;
+		align-items: flex-start;
+	}
+	.icon-dot {
+		display: inline-grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 46px;
+		height: 46px;
+		border-radius: 50%;
+		background: var(--white);
+		color: var(--caramel);
+	}
+	.inside h3 {
+		font-size: 1.4rem;
+		margin-bottom: 4px;
+	}
+	.inside p {
+		color: var(--cocoa);
+	}
+
+	.why-heading {
+		max-width: 30rem;
+		margin-bottom: 28px;
+	}
+	.why {
+		list-style: none;
+	}
+	.why .card {
+		font-family: var(--font-display);
+		font-size: clamp(1.4rem, 2.6vw, 1.75rem);
+		font-weight: 700;
+		line-height: 1.2;
+		display: flex;
+		align-items: flex-end;
+		min-height: 11rem;
+	}
+	/* The last card is the answer: dark */
+	.why .card:last-child {
+		background: var(--espresso);
+		border-color: var(--espresso);
+		color: var(--warm-white);
+	}
+
+	.journals {
+		padding-bottom: var(--section);
+	}
+	.list-heading {
+		margin-bottom: 28px;
+	}
+	.list {
+		display: grid;
+		gap: 24px;
+	}
+	.soon {
+		margin-top: 24px;
+	}
+</style>

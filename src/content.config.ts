@@ -1,79 +1,134 @@
-// DATA FLOW, STEP 1: where content comes from and what shape it must have.
+// DATA FLOW, STEP 1: what content exists and what shape it must have.
 //
-// At build time Astro runs each collection's `loader` (reads files from disk), then
-// checks every file's frontmatter against its `schema`. A missing title or a broken
-// photo path stops the build with an error naming the file, so mistakes never go live.
+// Every word on the site lives in Markdown files under src/content, so Ish can edit
+// it in the editor (/admin) without touching code. At build time Astro reads each
+// collection and checks it against its schema; a missing heading or a broken photo
+// path stops the build with an error naming the file, so mistakes never go live.
 //
-// The fields here must match public/admin/config.yml (the editor's form fields).
-// If you add a field, add it in both places.
+// The fields here must match public/admin/config.yml (the editor's form).
 
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-const journals = defineCollection({
-	// One folder per article: src/content/journals/<slug>/index.md, photos next to it.
-	// "cappadocia/index.md" gets the id "cappadocia" -> URL /journals/cappadocia
-	loader: glob({ base: './src/content/journals', pattern: '**/index.{md,mdx}' }),
+/** One page's content file: src/content/pages/<name>/index.md (photos sit next to it). */
+const page = (name: string) => glob({ base: `./src/content/pages/${name}`, pattern: 'index.md' });
 
-	// `image()` resolves a photo path relative to the Markdown file and lets
-	// <Image /> resize/compress it at build time.
+const link = z.object({ label: z.string(), url: z.string() });
+const card = z.object({ title: z.string(), text: z.string() });
+
+// ---------------------------------------------------------------------------
+// Journals: one folder per trip, src/content/journals/<slug>/index.md
+// Adding London later = adding one folder. The Journals page lists them automatically.
+// ---------------------------------------------------------------------------
+const journals = defineCollection({
+	loader: glob({ base: './src/content/journals', pattern: '*/index.{md,mdx}' }),
 	schema: ({ image }) =>
 		z.object({
-			// Basics
 			title: z.string(),
-			excerpt: z.string().optional(), // one or two sentences for cards & social previews
-			date: z.coerce.date(), // publish date
-			category: z.enum(['journal', 'guide', 'family-travel']).default('journal'),
-			featured: z.boolean().default(false), // show in "Featured journals" on the homepage
-
-			// Where
-			destination: z.string().optional(), // e.g. "Cappadocia"
-			country: z.string().optional(), // e.g. "Turkey" -> /destinations/turkey
-			location: z.string().optional(), // older field; used if destination is empty
-
-			// Photos
+			status: z.enum(['out-now', 'coming-soon', 'draft']).default('draft'), // draft = hidden
+			order: z.number().default(99), // lower numbers are listed first
+			tags: z.array(z.string()).default([]), // e.g. ["Journal 01", "Türkiye · 2 days"]
+			summary: z.string().optional(),
 			cover: image().optional(),
 			coverAlt: z.string().optional(),
-			closingPhoto: image().optional(), // family photo at the end of the article
-			closingAlt: z.string().optional(),
-			closingCaption: z.string().optional(),
-
-			// Trip at a glance
-			travelDates: z.string().optional(), // e.g. "April 2026"
-			tripLength: z.string().optional(), // e.g. "5 days"
-			travelledWith: z.string().optional(), // e.g. "Two adults and a 2-year-old"
-			bestFor: z.string().optional(), // e.g. "Toddlers, slow travellers"
-			budget: z.string().optional(), // headline total, e.g. "£1,450 for 3"
-			budgetBreakdown: z.array(z.object({ item: z.string(), cost: z.string() })).optional(),
-
-			// Extras
-			mapEmbed: z.string().optional(), // Google Maps "Embed a map" code or its link
-			usefulLinks: z.array(z.object({ label: z.string(), url: z.url() })).optional(),
-			pdfGuide: z.string().optional(), // e.g. "/guides/cappadocia.pdf" (lives in public/guides)
+			pdf: z.string().optional(), // e.g. "/journals/cappadocia.pdf" (file in public/journals)
+			cta: link.optional(), // e.g. "Tell us" -> /contact on a coming-soon card
 		}),
 });
 
-// Editable site pages: home, about, contact. Each is src/content/pages/<id>/index.md.
-// Only some fields apply to each page, so everything is optional.
-const pages = defineCollection({
-	loader: glob({ base: './src/content/pages', pattern: '*/index.md' }),
+// ---------------------------------------------------------------------------
+// Site-wide settings: title, tagline, footer line, Instagram, email, contact form key
+// ---------------------------------------------------------------------------
+const site = defineCollection({
+	loader: page('site'),
+	schema: z.object({
+		title: z.string(),
+		tagline: z.string(),
+		footerLine: z.string(),
+		instagramHandle: z.string(), // without the @
+		email: z.string().optional(),
+		contactFormKey: z.string().optional(), // Web3Forms access key
+	}),
+});
+
+// ---------------------------------------------------------------------------
+// Home (About me). The Markdown body holds the paragraphs.
+// ---------------------------------------------------------------------------
+const home = defineCollection({
+	loader: page('home'),
 	schema: ({ image }) =>
 		z.object({
-			title: z.string().optional(),
-			intro: z.string().optional(),
-			// homepage hero (next to the photo)
-			heroLabel: z.string().optional(),
-			heroHeading: z.string().optional(),
-			heroText: z.string().optional(),
+			label: z.string(),
+			heading: z.string(),
 			photo: image().optional(),
 			photoAlt: z.string().optional(),
-			facts: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
-			// contact page = site-wide social settings
-			email: z.string().optional(),
-			instagram: z.string().optional(),
-			linktree: z.string().optional(),
+			photoNote: z.string().optional(),
+			quote: z.string().optional(),
+			button: link,
+			banner: z.object({ tag: z.string(), text: z.string(), url: z.string() }).optional(),
 		}),
 });
 
-export const collections = { journals, pages };
+// ---------------------------------------------------------------------------
+// Our story: seven sections, top to bottom
+// ---------------------------------------------------------------------------
+const ourStory = defineCollection({
+	loader: page('our-story'),
+	schema: ({ image }) =>
+		z.object({
+			intro: z.object({
+				heading: z.string(),
+				text: z.string(),
+				photo: image().optional(),
+				photoAlt: z.string().optional(),
+			}),
+			growing: z.object({ heading: z.string(), cards: z.array(card) }),
+			outdoors: z.object({
+				heading: z.string(),
+				text: z.string(),
+				photo: image().optional(),
+				photoAlt: z.string().optional(),
+			}),
+			band: z.object({ kicker: z.string(), heading: z.string(), text: z.string() }),
+			needs: z.object({ heading: z.string(), text: z.string(), cards: z.array(card) }),
+			places: z.object({
+				heading: z.string(),
+				items: z.array(z.object({ name: z.string(), note: z.string().optional() })),
+			}),
+			closing: z.object({ kicker: z.string(), heading: z.string(), button: link }),
+		}),
+});
+
+// ---------------------------------------------------------------------------
+// Journals page copy (the journal cards themselves come from `journals`)
+// ---------------------------------------------------------------------------
+const journalsPage = defineCollection({
+	loader: page('journals'),
+	schema: z.object({
+		label: z.string(),
+		heading: z.string(),
+		text: z.string(),
+		insideHeading: z.string(),
+		inside: z.array(
+			card.extend({ icon: z.enum(['calendar', 'wallet', 'heart', 'skip', 'pin', 'sun', 'compass']) }),
+		),
+		whyHeading: z.string(),
+		why: z.array(z.string()),
+		listHeading: z.string(),
+	}),
+});
+
+// ---------------------------------------------------------------------------
+// Contact page copy
+// ---------------------------------------------------------------------------
+const contact = defineCollection({
+	loader: page('contact'),
+	schema: z.object({
+		heading: z.string(),
+		text: z.string(),
+		privacy: z.string(),
+	}),
+});
+
+export const collections = { journals, site, home, ourStory, journalsPage, contact };

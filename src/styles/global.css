@@ -1,39 +1,40 @@
 /*
   Global styles, imported once by src/layouts/SiteLayout.astro.
-  Component <style> tags are scoped to that component; this file is for site-wide rules.
-
-  Design direction: a printed family travel journal. Warm paper, earthy neutrals,
-  big photographs, generous white space, very little motion.
+  Colours, fonts and sizes live here as variables, so the whole site can be
+  re-tuned in one place. Component <style> tags are scoped to their component.
 */
 
-/* ---------- Design tokens ---------- */
+/* ---------- Design tokens (from the build guide) ---------- */
 :root {
 	color-scheme: light;
 
-	--paper: #faf7f2; /* page background */
-	--surface: #fffdf9; /* cards, boxes */
-	--sand: #e8ded2; /* soft panels, dividers */
-	--sand-soft: #f0e8de;
-	--taupe: #a89584;
-	--ink: #3b3632; /* body text */
-	--muted: #6e645b; /* secondary text (AA contrast on paper) */
-	--accent: #a65e40; /* terracotta: links, buttons */
-	--accent-dark: #8a4b31;
-	--on-accent: #fffdf9;
-	--sage: #6f7d68; /* small labels */
-	--line: #ddd2c4;
+	/* Colours */
+	--espresso: #3b2a20; /* headings, body text, footer, dark sections */
+	--cocoa: #6b5647; /* secondary text (never on Latte) */
+	--caramel: #8b5e3c; /* buttons, small labels, links */
+	--caramel-dark: #6e4729; /* link hover */
+	--warm-white: #fbf8f3; /* page background */
+	--white: #ffffff; /* cards, form fields */
+	--sand: #e8e1d6; /* borders, dividers */
+	--latte: #e8d5bf; /* journal banner, photo backgrounds */
+	--oat: #f3ebe1; /* small tags, soft sections */
+	--oat-2: #efe6da;
+	--biscuit: #e3c9a8; /* highlights on dark sections */
 
-	--radius: 4px; /* editorial: barely rounded */
-	--radius-lg: 10px;
+	/* Fonts (the --font-heading-face etc. variables come from the Fonts API in astro.config.mjs) */
+	--font-display: var(--font-heading-face), Georgia, serif;
+	--font-body: var(--font-body-face), system-ui, sans-serif;
+	--font-script: var(--font-hand-face), cursive;
 
-	--font-heading: var(--font-bricolage), system-ui, sans-serif;
-	--font-serif: var(--font-cormorant), Georgia, serif; /* italic accents */
-	--font-body: var(--font-nunito-sans), system-ui, sans-serif;
-	--font-script: var(--font-caveat), cursive;
+	/* Shape */
+	--radius-photo: 28px;
+	--radius-card: 20px;
+	--radius-pill: 999px;
 
-	--wide: 1180px;
-	--text: 700px;
-	--gutter: clamp(16px, 4vw, 40px);
+	/* Layout */
+	--max: 1200px;
+	--pad: 24px;
+	--section: clamp(64px, 9vw, 96px);
 }
 
 /* ---------- Reset & base ---------- */
@@ -51,21 +52,20 @@ html {
 
 body {
 	font-family: var(--font-body);
-	font-size: 1.0625rem;
-	background: var(--paper);
-	color: var(--ink);
-	line-height: 1.7;
+	font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); /* 16–18px */
+	line-height: 1.65;
+	background: var(--warm-white);
+	color: var(--espresso);
 	-webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
-h3,
-h4 {
-	font-family: var(--font-heading);
-	font-weight: 600;
-	line-height: 1.12;
-	letter-spacing: -0.02em;
+h3 {
+	font-family: var(--font-display);
+	font-weight: 700;
+	line-height: 1.08;
+	letter-spacing: -0.01em;
 	text-wrap: balance;
 }
 
@@ -78,18 +78,15 @@ a {
 	text-decoration: none;
 }
 
-img,
-iframe {
+img {
 	display: block;
 	max-width: 100%;
-}
-img {
 	height: auto;
 }
 
 /* ---------- Accessibility ---------- */
 :focus-visible {
-	outline: 2px solid var(--accent);
+	outline: 2px solid var(--caramel);
 	outline-offset: 3px;
 }
 
@@ -98,9 +95,10 @@ img {
 	left: 16px;
 	top: -100px;
 	z-index: 10;
-	background: var(--ink);
-	color: var(--paper);
+	background: var(--espresso);
+	color: var(--white);
 	padding: 10px 16px;
+	border-radius: var(--radius-pill);
 	font-weight: 700;
 }
 .skip-link:focus {
@@ -126,126 +124,110 @@ img {
 	}
 }
 
-/* ---------- Layout helpers ---------- */
-.wrap {
+/* ---------- Layout ---------- */
+.container {
 	width: 100%;
-	max-width: calc(var(--wide) + 2 * var(--gutter));
+	max-width: calc(var(--max) + 2 * var(--pad));
 	margin-inline: auto;
-	padding-inline: var(--gutter);
-}
-.wrap-text {
-	width: 100%;
-	max-width: calc(var(--text) + 2 * var(--gutter));
-	margin-inline: auto;
-	padding-inline: var(--gutter);
+	padding-inline: var(--pad);
 }
 
 .section {
-	padding-block: clamp(48px, 8vw, 96px);
+	padding-block: var(--section);
 }
-.section + .section {
-	padding-top: 0;
+
+/* Photo + text side by side; one column on phones */
+.split {
+	display: grid;
+	gap: clamp(32px, 6vw, 72px);
+	align-items: center;
+}
+@media (min-width: 820px) {
+	.split {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.cards {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
 }
 
 /* ---------- Type helpers ---------- */
 .label {
-	font-family: var(--font-body);
-	font-size: 0.75rem;
+	font-size: 0.78rem;
 	font-weight: 700;
 	letter-spacing: 0.16em;
 	text-transform: uppercase;
-	color: var(--sage);
+	color: var(--caramel);
 }
 
-.script {
+.hand {
 	font-family: var(--font-script);
 	font-weight: 500;
-	color: var(--accent);
+	line-height: 1.25;
 }
 
 .lede {
-	font-size: 1.15rem;
-	color: var(--muted);
+	font-size: 1.1em;
+	color: var(--cocoa);
 }
 
-/* Section heading: small label above a large serif title */
-.section-head {
-	display: flex;
-	align-items: end;
-	justify-content: space-between;
-	gap: 16px;
-	flex-wrap: wrap;
-	margin-bottom: clamp(24px, 4vw, 40px);
+.h-xl {
+	font-size: clamp(2.6rem, 6.5vw, 4.4rem);
 }
-.section-head h2 {
-	font-size: clamp(2rem, 4.5vw, 2.8rem);
-	margin-top: 6px;
+.h-lg {
+	font-size: clamp(2.1rem, 4.8vw, 3.2rem);
 }
-
-.text-link {
-	font-weight: 700;
-	font-size: 0.9rem;
-	letter-spacing: 0.04em;
-	color: var(--accent);
-	border-bottom: 1px solid currentColor;
-	padding-bottom: 2px;
-}
-.text-link:hover {
-	color: var(--accent-dark);
+.h-md {
+	font-size: clamp(1.6rem, 3vw, 2rem);
 }
 
 /* ---------- Buttons ---------- */
 .btn {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-	padding: 13px 26px;
-	font-size: 0.8rem;
+	justify-content: center;
+	gap: 10px;
+	min-height: 48px;
+	padding: 12px 26px;
+	border-radius: var(--radius-pill);
+	background: var(--caramel);
+	color: var(--white);
+	font-family: var(--font-body);
+	font-size: 1rem;
 	font-weight: 700;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	border: 1px solid var(--ink);
-	transition: background 0.2s, color 0.2s;
+	border: 0;
+	cursor: pointer;
+	transition: background 0.2s;
 }
 .btn:hover {
-	background: var(--ink);
-	color: var(--paper);
+	background: var(--caramel-dark);
 }
-.btn-primary {
-	background: var(--accent);
-	border-color: var(--accent);
-	color: var(--on-accent);
+.btn-light {
+	background: var(--white);
+	color: var(--espresso);
+	border: 1px solid var(--sand);
 }
-.btn-primary:hover {
-	background: var(--accent-dark);
-	border-color: var(--accent-dark);
-	color: var(--on-accent);
+.btn-light:hover {
+	background: var(--oat);
 }
 
-.actions {
-	display: flex;
-	gap: 12px;
-	flex-wrap: wrap;
+/* ---------- Bits ---------- */
+.card {
+	background: var(--white);
+	border: 1px solid var(--sand);
+	border-radius: var(--radius-card);
+	padding: clamp(22px, 3vw, 30px);
 }
 
-/* ---------- Grids ---------- */
-.grid {
-	display: grid;
-	gap: clamp(28px, 4vw, 40px) clamp(20px, 3vw, 32px);
-	grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-}
-.grid-3 {
-	grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-}
-
-.empty {
-	text-align: center;
-	padding: 48px 24px;
-	border: 1px dashed var(--line);
-	color: var(--muted);
-}
-.empty h3 {
-	font-size: 1.6rem;
-	color: var(--ink);
-	margin-bottom: 8px;
+.tag {
+	display: inline-block;
+	padding: 5px 12px;
+	border-radius: var(--radius-pill);
+	background: var(--oat);
+	color: var(--espresso);
+	font-size: 0.82rem;
+	font-weight: 700;
 }
